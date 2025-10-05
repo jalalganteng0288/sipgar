@@ -1,55 +1,57 @@
+{{-- resources/views/admin/projects/show.blade.php --}}
+
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{-- Menampilkan nama perumahan sebagai judul --}}
-            Detail: {{ $project->name }}
-        </h2>
-    </x-slot>
+    {{-- ... (kode untuk menampilkan detail proyek) --}}
 
-    {{-- Memanggil file CSS Leaflet --}}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <div class="mt-8">
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold">Tipe Rumah</h2>
+            <a href="{{ route('admin.projects.house-types.create', $project) }}"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Tambah Tipe Rumah
+            </a>
+        </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-
-                    <h1 class="text-2xl font-bold mb-4">{{ $project->name }}</h1>
-                    <p class="text-gray-600 mb-2"><strong>Pengembang:</strong> {{ $project->developer_name }}</p>
-                    <p class="text-gray-600 mb-4"><strong>Alamat:</strong> {{ $project->address }}</p>
-                    <p class="mb-4">{{ $project->description }}</p>
-
-                    {{-- Placeholder untuk Peta --}}
-                    <div id="map" style="height: 400px;" class="mt-4 rounded-lg"></div>
-
-                </div>
-            </div>
+        <div class="mt-4">
+            {{-- Tabel untuk menampilkan daftar tipe rumah --}}
+            @if ($project->houseTypes->count() > 0)
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Nama Tipe</th>
+                            <th scope="col" class="px-6 py-3">Harga</th>
+                            <th scope="col" class="px-6 py-3">Luas Tanah</th>
+                            <th scope="col" class="px-6 py-3">Luas Bangunan</th>
+                            <th scope="col" class="px-6 py-3">Unit Tersedia</th>
+                            <th scope="col" class="px-6 py-3">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($project->houseTypes as $houseType)
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">{{ $houseType->name }}</td>
+                                <td class="px-6 py-4">Rp {{ number_format($houseType->price, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4">{{ $houseType->land_area }} m²</td>
+                                <td class="px-6 py-4">{{ $houseType->building_area }} m²</td>
+                                <td class="px-6 py-4">{{ $houseType->units_available }}</td>
+                                <td class="px-6 py-4">
+                                    <a href="{{ route('house-types.edit', $houseType) }}"
+                                        class="text-blue-600 hover:text-blue-900">Edit</a>
+                                    <form action="{{ route('house-types.destroy', $houseType) }}" method="POST"
+                                        class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="text-red-600 hover:text-red-900 ml-2">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p>Belum ada data tipe rumah untuk proyek ini.</p>
+            @endif
         </div>
     </div>
-
-    {{-- Memanggil file JavaScript Leaflet (Cukup sekali) --}}
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    {{-- Script untuk menampilkan peta --}}
-    <script>
-        // Ambil latitude dan longitude dari data project
-        // Jika datanya kosong/null, gunakan koordinat default (misal: Garut)
-        const lat = {{ $project->latitude ?? -7.21667 }};
-        const lng = {{ $project->longitude ?? 107.9 }};
-
-        // Inisialisasi peta dan setel tampilan awal ke koordinat
-        var map = L.map('map').setView([lat, lng], 13); // Zoom 13 agar tidak terlalu dekat
-
-        // Tambahkan layer peta dari OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Tambahkan penanda (marker) di lokasi perumahan hanya jika koordinatnya valid
-        if ({{ $project->latitude ? 'true' : 'false' }}) { // Cek jika latitude ada isinya
-            L.marker([lat, lng]).addTo(map)
-                .bindPopup('<b>{{ $project->name }}</b><br>{{ $project->address }}')
-                .openPopup();
-        }
-    </script>
 </x-app-layout>

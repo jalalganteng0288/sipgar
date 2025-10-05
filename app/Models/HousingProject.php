@@ -12,6 +12,7 @@ class HousingProject extends Model
         'address',
         'description',
         'developer_name',
+        'image',
         'latitude',       // <-- Tambahkan ini
         'longitude',
         'district',

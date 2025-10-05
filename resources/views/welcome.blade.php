@@ -76,24 +76,42 @@
             </div>
 
 
+            {{-- Ganti bagian ini di resources/views/welcome.blade.php --}}
+
             <div class="mt-16">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @forelse ($projects as $project)
-                        {{-- KARTU DIBUNGKUS DENGAN LINK YANG BENAR --}}
-                        <a href="{{ route('projects.show', $project) }}" class="block">
-                            <div
-                                class="scale-100 p-6 bg-white from-gray-700/50 via-transparent rounded-lg shadow-2xl shadow-gray-500/20 motion-safe:hover:scale-[1.01] transition-all duration-250 h-full">
-                                <div>
-                                    <h2 class="text-xl font-semibold text-gray-900">{{ $project->name }}</h2>
-                                    <p class="mt-2 text-sm text-gray-500">
-                                        Oleh: {{ $project->developer_name }}
-                                    </p>
-                                    <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                                        {{ Str::limit($project->description, 100) }}
-                                    </p>
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+                            <a href="{{ route('projects.show', $project) }}">
+                                <img class="h-48 w-full object-cover"
+                                    src="{{ $project->image ? asset('storage/' . $project->image) : 'https://via.placeholder.com/400x250.png?text=Gambar+Tidak+Tersedia' }}"
+                                    alt="Gambar {{ $project->name }}">
+                            </a>
+                            <div class="p-4 bg-yellow-100 border-t border-yellow-300 flex-grow">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <a href="{{ route('projects.show', $project) }}" class="hover:text-indigo-600">
+                                        {{ Str::upper($project->name) }}
+                                    </a>
+                                </h3>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    {{-- Mengambil nama kecamatan dari relasi --}}
+                                    {{ $project->district->name ?? 'Lokasi tidak diketahui' }}, KAB. GARUT
+                                </p>
+
+                                <div class="mt-4">
+                                    <span class="inline-block bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                                        {{ $project->houseTypes()->sum('units_available') }} Unit tersedia
+                                    </span>
+                                    {{-- Anda bisa menambahkan info lain di sini --}}
                                 </div>
                             </div>
-                        </a>
+                            <div class="px-4 py-3 bg-gray-50">
+                                <a href="{{ route('projects.show', $project) }}"
+                                    class="block w-full text-center bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+                                    Lihat Detail Lokasi
+                                </a>
+                            </div>
+                        </div>
                     @empty
                         <p class="text-center text-gray-500 col-span-3">Tidak ada data perumahan yang cocok dengan
                             pencarian.</p>

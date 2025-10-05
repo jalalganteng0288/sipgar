@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <form method="POST" action="{{ route('admin.projects.store') }}">
+                    <form method="POST" action="..." enctype="multipart/form-data">
                         @csrf
 
                         <div>

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Models\HousingProject;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // Pastikan ini ada
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\HousingProject;
 
 class HousingProjectController extends Controller
 {
@@ -24,9 +25,7 @@ class HousingProjectController extends Controller
      */
     public function create()
     {
-        // Kode 3205 adalah kode untuk Kabupaten Garut
         $districts = District::where('city_code', 3205)->pluck('name', 'code');
-
         return view('admin.projects.create', ['districts' => $districts]);
     }
 
@@ -35,19 +34,28 @@ class HousingProjectController extends Controller
      */
     public function store(Request $request)
     {
-        // --- VALIDASI DIPERBARUI ---
+        // --- VALIDASI DIGABUNGKAN DENGAN VALIDASI GAMBAR ---
         $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validasi gambar
             'address' => 'required|string',
-            'district_code' => 'required|exists:districts,code', // <-- Diperbarui
-            'village_code' => 'required|exists:villages,code',   // <-- Diperbarui
+            'district_code' => 'required|exists:districts,code',
+            'village_code' => 'required|exists:villages,code',
             'description' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
 
-        HousingProject::create($request->all());
+        $data = $request->except('image'); // Ambil semua data kecuali gambar
+
+        // --- LOGIKA UNTUK MENYIMPAN GAMBAR ---
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('projects', 'public');
+            $data['image'] = $path;
+        }
+
+        HousingProject::create($data); // Simpan data ke database
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil ditambahkan.');
     }
@@ -80,19 +88,33 @@ class HousingProjectController extends Controller
      */
     public function update(Request $request, HousingProject $project)
     {
-        // --- VALIDASI DIPERBARUI ---
+        // --- VALIDASI DIGABUNGKAN DENGAN VALIDASI GAMBAR ---
         $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validasi gambar
             'address' => 'required|string',
-            'district_code' => 'required|exists:districts,code', // <-- Diperbarui
-            'village_code' => 'required|exists:villages,code',   // <-- Diperbarui
+            'district_code' => 'required|exists:districts,code',
+            'village_code' => 'required|exists:villages,code',
             'description' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
 
-        $project->update($request->all());
+        $data = $request->except('image');
+
+        // --- LOGIKA UNTUK MEMPERBARUI GAMBAR ---
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($project->image) {
+                Storage::disk('public')->delete($project->image);
+            }
+            // Simpan gambar baru
+            $path = $request->file('image')->store('projects', 'public');
+            $data['image'] = $path;
+        }
+
+        $project->update($data); // Perbarui data di database
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil diperbarui.');
     }
@@ -102,6 +124,11 @@ class HousingProjectController extends Controller
      */
     public function destroy(HousingProject $project)
     {
+        // --- LOGIKA UNTUK MENGHAPUS GAMBAR ---
+        if ($project->image) {
+            Storage::disk('public')->delete($project->image);
+        }
+
         $project->delete();
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil dihapus.');

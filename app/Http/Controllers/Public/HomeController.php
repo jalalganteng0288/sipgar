@@ -35,4 +35,15 @@ class HomeController extends Controller
             'districts' => $districts,
         ]);
     }
+    // app/Http/Controllers/Public/HomeController.php
+
+    // ...
+    public function show(HousingProject $project)
+    {
+        // Kita tambahkan ->load('houseTypes') untuk mengambil data relasinya
+        $project->load('houseTypes');
+
+        return view('projects.show', compact('project'));
+    }
+    // ...
 }
