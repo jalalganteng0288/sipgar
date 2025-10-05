@@ -69,6 +69,9 @@ class HousingProjectController extends Controller
      */
     public function show(HousingProject $project)
     {
+        // Tambahkan baris ini untuk memuat data Tipe Rumah
+        $project->load('houseTypes');
+
         return view('admin.projects.show', ['project' => $project]);
     }
 

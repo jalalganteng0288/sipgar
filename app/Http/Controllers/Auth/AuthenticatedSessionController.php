@@ -28,9 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.projects.index', absolute: false));
+        // Ganti baris ini agar mengarah ke rute dashboard admin yang benar
+        return redirect()->intended(route('admin.dashboard', absolute: false));
     }
-
     /**
      * Destroy an authenticated session.
      */

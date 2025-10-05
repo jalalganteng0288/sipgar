@@ -12,8 +12,7 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    {{-- Hanya ada satu link utama, yaitu Data Perumahan --}}
-                    <x-nav-link :href="route('admin.projects.index')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.projects.*')">
+                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard') || request()->routeIs('admin.projects.*')">
                         {{ __('Data Perumahan') }}
                     </x-nav-link>
                 </div>
