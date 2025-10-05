@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; // Pastikan ini ada
-use Laravolt\Indonesia\Models\District;
-use Laravolt\Indonesia\Models\Village;
+use App\Models\Indonesia\District;
+use App\Models\Indonesia\Village;
 
 class HousingProjectController extends Controller
 {
@@ -25,8 +25,12 @@ class HousingProjectController extends Controller
      */
     public function create()
     {
+        // Ambil semua kecamatan di Kabupaten Garut (kode: 3205)
+        // lalu ubah formatnya menjadi [kode => nama]
         $districts = District::where('city_code', 3205)->pluck('name', 'code');
-        return view('admin.projects.create', ['districts' => $districts]);
+
+        // Kirim data districts ke view
+        return view('admin.projects.create', compact('districts'));
     }
 
     /**

@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('house_types', function (Blueprint $table) {
+        // isi file migrasi
+        Schema::create('project_images', function (Blueprint $table) {
             $table->id();
-            // Ini adalah kolom yang hilang
             $table->foreignId('housing_project_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->unsignedBigInteger('price');
-            $table->unsignedInteger('land_area');
-            $table->unsignedInteger('building_area');
-            $table->unsignedInteger('units_available');
+            $table->string('path');
             $table->timestamps();
         });
     }
@@ -29,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('house_types');
+        Schema::dropIfExists('project_images');
     }
 };

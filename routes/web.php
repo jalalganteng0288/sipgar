@@ -32,8 +32,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/projects/{project}', [HomeController::class, 'show'])->name('projects.show');
 
     Route::get('dependent-dropdown/villages', [DependentDropdownController::class, 'villages'])->name('dependent-dropdown.villages');
-    Route::resource('admin/projects/{project}/house-types', HouseTypeController::class)->shallow();
+    // Route::resource('admin/projects/{project}/house-types', HouseTypeController::class)->shallow();
     Route::get('/get-villages', [DependentDropdownController::class, 'villages'])->name('dependent-dropdown.villages');
+    Route::resource('projects.house-types', HouseTypeController::class)
+        ->shallow() // ->shallow() membuat rute edit, show, update, destroy tidak perlu project_id
+        ->names('admin.house-types');
+    Route::get('/api/projects', [HomeController::class, 'getAllProjectsForMap'])->name('api.projects');
+    Route::get('/', [HomeController::class, 'index'])->name('home');
 });
 
 require __DIR__ . '/auth.php';

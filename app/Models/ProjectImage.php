@@ -5,27 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class HouseType extends Model
+class ProjectImage extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'housing_project_id',
-        'name',
-        'price',
-        'land_area',
-        'building_area',
-        'units_available',
+        'path',
     ];
 
-    /**
-     * Mendefinisikan relasi "belongsTo" ke HousingProject.
-     */
+    // Definisikan relasi sebaliknya ke HousingProject (opsional tapi baik untuk dilakukan)
     public function housingProject()
     {
         return $this->belongsTo(HousingProject::class);
