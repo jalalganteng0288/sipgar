@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\DependentDropdownController;
 use App\Http\Controllers\Admin\HouseTypeController;
+use App\Http\Controllers\Public\ChartController;
 
 
 Route::get('/', [HomeController::class, 'index']);
@@ -15,9 +16,8 @@ Route::get('/', [HomeController::class, 'index']);
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
-Route::get('/dashboard', [DashboardController::class, 'index'])
+Route::get('/dashboard', [HousingProjectController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -39,6 +39,8 @@ Route::middleware('auth')->group(function () {
         ->names('admin.house-types');
     Route::get('/api/projects', [HomeController::class, 'getAllProjectsForMap'])->name('api.projects');
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/api/projects-location', [HomeController::class, 'getAllProjectsForMap'])->name('api.projects-location');
+    Route::get('/grafik-perumahan', [ChartController::class, 'index'])->name('charts.index');
 });
 
 require __DIR__ . '/auth.php';
