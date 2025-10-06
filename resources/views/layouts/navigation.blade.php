@@ -11,11 +11,7 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard') || request()->routeIs('admin.projects.*')">
-                        {{ __('Data Perumahan') }}
-                    </x-nav-link>
-                </div>
+                
             </div>
 
             <!-- Settings Dropdown -->
@@ -87,9 +83,9 @@
             </div>
 
             <div class="mt-3 space-y-1">
-              <x-responsive-nav-link :href="route('admin.profile.edit')">
-    {{ __('Profile') }}
-</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.profile.edit')">
+                    {{ __('Profile') }}
+                </x-responsive-nav-link>
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
