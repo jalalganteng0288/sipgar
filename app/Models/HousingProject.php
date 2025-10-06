@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Laravolt\Indonesia\Models\District;
+use Laravolt\Indonesia\Models\Village;
 
 class HousingProject extends Model
 {
@@ -14,6 +15,7 @@ class HousingProject extends Model
         'description',
         'developer_name',
         'image',
+        'site_plan',
         'latitude',       // <-- Tambahkan ini
         'longitude',
         'district_code', // Pastikan ini ada
@@ -31,6 +33,11 @@ class HousingProject extends Model
     public function district()
     {
         return $this->belongsTo(District::class, 'district_code', 'code');
+    }
+
+    public function village()
+    {
+        return $this->belongsTo(Village::class, 'village_code', 'code');
     }
 
     public function images()

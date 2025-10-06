@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage; // Pastikan ini ada
 use App\Models\Indonesia\District;
 use App\Models\Indonesia\Village;
 
+
 class HousingProjectController extends Controller
 {
     /**
@@ -96,34 +97,38 @@ class HousingProjectController extends Controller
     public function update(Request $request, HousingProject $project)
     {
         // --- VALIDASI DIGABUNGKAN DENGAN VALIDASI GAMBAR ---
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validasi gambar
             'address' => 'required|string',
-            'district_code' => 'required|exists:districts,code',
-            'village_code' => 'required|exists:villages,code',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048', // Foto Utama
+            'site_plan' => 'nullable|image|max:2048', // Tambahkan validasi siteplan
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'district_code' => 'required',
+            'village_code' => 'required',
         ]);
 
-        $data = $request->except('image');
-
-        // --- LOGIKA UNTUK MEMPERBARUI GAMBAR ---
         if ($request->hasFile('image')) {
             // Hapus gambar lama jika ada
             if ($project->image) {
                 Storage::disk('public')->delete($project->image);
             }
-            // Simpan gambar baru
-            $path = $request->file('image')->store('projects', 'public');
-            $data['image'] = $path;
+            $validated['image'] = $request->file('image')->store('project-images', 'public');
         }
 
-        $project->update($data); // Perbarui data di database
+        // Logika untuk upload site_plan
+        if ($request->hasFile('site_plan')) {
+            if ($project->site_plan) {
+                Storage::disk('public')->delete($project->site_plan);
+            }
+            $validated['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
+        }
 
-        return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil diperbarui.');
+        $project->update($validated);
+
+        return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
     }
 
     /**

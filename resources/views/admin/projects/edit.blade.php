@@ -11,9 +11,23 @@
                 <div class="p-6 text-gray-900">
 
                     {{-- 1. Menambahkan enctype untuk upload file --}}
-                    <form method="POST" action="{{ route('admin.projects.update', $project) }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('admin.projects.update', $project) }}"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT') {{-- Metode untuk update --}}
+
+                        <div class="mt-4">
+                            <x-input-label for="site_plan" :value="__('Gambar Siteplan')" />
+                            <input id="site_plan" name="site_plan" type="file" class="block mt-1 w-full" />
+                            <x-input-error :messages="$errors->get('site_plan')" class="mt-2" />
+                            @if ($project->site_plan)
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-600">Siteplan saat ini:</p>
+                                    <img src="{{ asset('storage/' . $project->site_plan) }}" alt="Siteplan"
+                                        class="w-48 h-auto mt-1 rounded">
+                                </div>
+                            @endif
+                        </div>
 
                         {{-- Nama Perumahan --}}
                         <div>
@@ -31,10 +45,21 @@
                             <x-input-error :messages="$errors->get('developer_name')" class="mt-2" />
                         </div>
 
+                        <div class="mt-4">
+                            <x-input-label for="specifications" :value="__('Spesifikasi Teknis (Format JSON)')" />
+                            <textarea id="specifications" name="specifications" rows="10"
+                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm font-mono text-sm">
+        {{ old('specifications', json_encode($houseType->specifications, JSON_PRETTY_PRINT)) }}
+    </textarea>
+                            <p class="mt-1 text-xs text-gray-500">Contoh: {"Pondasi": "Batu Kali", "Dinding": "Bata
+                                Merah"}</p>
+                        </div>
+
                         {{-- Gambar Utama --}}
                         <div class="mt-4">
                             <x-input-label for="image" :value="__('Gambar Utama (Opsional)')" />
-                            <x-text-input id="image" class="block mt-1 w-full border p-2 rounded-md" type="file" name="image" />
+                            <x-text-input id="image" class="block mt-1 w-full border p-2 rounded-md" type="file"
+                                name="image" />
                             <x-input-error :messages="$errors->get('image')" class="mt-2" />
                         </div>
 
@@ -43,7 +68,7 @@
                             <div class="mt-4">
                                 <p class="block font-medium text-sm text-gray-700">Gambar saat ini:</p>
                                 <img src="{{ asset('storage/' . $project->image) }}" alt="{{ $project->name }}"
-                                     class="w-48 h-auto rounded-md mt-2 border p-1">
+                                    class="w-48 h-auto rounded-md mt-2 border p-1">
                             </div>
                         @endif
 
@@ -51,8 +76,8 @@
                         <div class="mt-4">
                             <x-input-label for="address" :value="__('Alamat')" />
                             <textarea id="address" name="address" rows="3"
-                                      class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                      required>{{ old('address', $project->address) }}</textarea>
+                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                required>{{ old('address', $project->address) }}</textarea>
                             <x-input-error :messages="$errors->get('address')" class="mt-2" />
                         </div>
 
@@ -60,10 +85,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <x-input-label for="district_code" :value="__('Kecamatan')" />
-                                <select name="district_code" id="district_code" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <select name="district_code" id="district_code"
+                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    required>
                                     <option>Pilih Kecamatan</option>
                                     @foreach ($districts as $code => $name)
-                                        <option value="{{ $code }}" {{ old('district_code', $project->district_code) == $code ? 'selected' : '' }}>
+                                        <option value="{{ $code }}"
+                                            {{ old('district_code', $project->district_code) == $code ? 'selected' : '' }}>
                                             {{ $name }}
                                         </option>
                                     @endforeach
@@ -72,11 +100,14 @@
                             </div>
                             <div>
                                 <x-input-label for="village_code" :value="__('Desa/Kelurahan')" />
-                                <select name="village_code" id="village_code" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                     <option>Pilih Desa/Kelurahan</option>
-                                     {{-- Opsi desa akan diisi oleh JavaScript --}}
-                                     @foreach ($villages as $code => $name)
-                                        <option value="{{ $code }}" {{ old('village_code', $project->village_code) == $code ? 'selected' : '' }}>
+                                <select name="village_code" id="village_code"
+                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    required>
+                                    <option>Pilih Desa/Kelurahan</option>
+                                    {{-- Opsi desa akan diisi oleh JavaScript --}}
+                                    @foreach ($villages as $code => $name)
+                                        <option value="{{ $code }}"
+                                            {{ old('village_code', $project->village_code) == $code ? 'selected' : '' }}>
                                             {{ $name }}
                                         </option>
                                     @endforeach
@@ -89,12 +120,12 @@
                         <div class="mt-4">
                             <x-input-label for="description" :value="__('Deskripsi')" />
                             <textarea id="description" name="description" rows="5"
-                                      class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
+                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
                         </div>
 
                         {{-- Latitude & Longitude --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                             <div>
+                            <div>
                                 <x-input-label for="latitude" :value="__('Latitude')" />
                                 <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude"
                                     :value="old('latitude', $project->latitude)" />
@@ -111,7 +142,8 @@
 
                         {{-- Tombol Simpan --}}
                         <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('admin.projects.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">
+                            <a href="{{ route('admin.projects.index') }}"
+                                class="text-sm text-gray-600 hover:text-gray-900 mr-4">
                                 Batal
                             </a>
                             <x-primary-button>
@@ -133,16 +165,21 @@
                     var districtCode = $(this).val();
                     if (districtCode) {
                         $.ajax({
-                            url: '{{ route("dependent-dropdown.villages") }}',
+                            url: '{{ route('dependent-dropdown.villages') }}',
                             type: "GET",
-                            data: { district_code: districtCode, _token: '{{ csrf_token() }}' },
+                            data: {
+                                district_code: districtCode,
+                                _token: '{{ csrf_token() }}'
+                            },
                             dataType: "json",
                             success: function(data) {
                                 if (data) {
                                     $('#village_code').empty();
-                                    $('#village_code').append('<option>Pilih Desa/Kelurahan</option>');
+                                    $('#village_code').append(
+                                        '<option>Pilih Desa/Kelurahan</option>');
                                     $.each(data, function(key, value) {
-                                        $('#village_code').append('<option value="' + key + '">' + value + '</option>');
+                                        $('#village_code').append('<option value="' + key +
+                                            '">' + value + '</option>');
                                     });
                                 } else {
                                     $('#village_code').empty();
