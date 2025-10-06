@@ -18,24 +18,7 @@
         <div class="relative min-h-screen">
             {{-- HEADER --}}
             {{-- HEADER --}}
-            <header class="bg-white shadow-sm sticky top-0 z-50">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between items-center h-20">
-                        <div>
-                            <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600">SIPGAR</a>
-                        </div>
-                        {{-- HANYA TAMPILKAN TOMBOL LOGIN JIKA PENGGUNA ADALAH TAMU --}}
-                        <div>
-                            @guest
-                                <a href="{{ route('login') }}"
-                                    class="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-sm text-sm font-semibold">
-                                    Login Pengembang
-                                </a>
-                            @endguest
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <x-public-header />
 
             {{-- KONTEN UTAMA --}}
             <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -80,15 +63,7 @@
                     <form action="{{ route('home') }}" method="GET">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                             {{-- Placeholder Provinsi --}}
-                            <div>
-                                <label for="provinsi" class="block text-sm font-medium text-gray-500 mb-1">Pilih
-                                    Provinsi</label>
-                                <select id="provinsi"
-                                    class="form-select w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    disabled>
-                                    <option>JAWA BARAT</option>
-                                </select>
-                            </div>
+                            
 
                             {{-- Placeholder Kabupaten/Kota --}}
                             <div>

@@ -147,12 +147,16 @@
             const lat = {{ $project->latitude ?? -7.21667 }};
             const lng = {{ $project->longitude ?? 107.9 }};
             let mapInitialized = false;
+            let map = null;
 
             function initMap() {
-                if (mapInitialized) return;
+                if (mapInitialized) {
+                    setTimeout(() => map.invalidateSize(), 100);
+                    return;
+                };
                 mapInitialized = true;
-                
-                const map = L.map('map').setView([lat, lng], 15);
+
+                map = L.map('map').setView([lat, lng], 15);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
@@ -160,9 +164,6 @@
                 if ({{ $project->latitude ? 'true' : 'false' }}) {
                     L.marker([lat, lng]).addTo(map).bindPopup('<b>{{ $project->name }}</b>').openPopup();
                 }
-                
-                // Refresh map size
-                setTimeout(() => map.invalidateSize(), 100);
             }
 
             const observer = new MutationObserver((mutations) => {
@@ -181,5 +182,4 @@
         });
     </script>
 </body>
-
 </html>
