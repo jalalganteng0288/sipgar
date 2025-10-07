@@ -1,196 +1,158 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Edit Data Perumahan') }}
+            {{ __('Edit Data Proyek: ') }} <span class="font-normal">{{ $project->name }}</span>
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <form action="{{ route('admin.projects.update', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+                @csrf
+                @method('PUT')
 
-                    {{-- 1. Menambahkan enctype untuk upload file --}}
-                    <form method="POST" action="{{ route('admin.projects.update', $project) }}"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT') {{-- Metode untuk update --}}
-
-                        <div class="mt-4">
-                            <x-input-label for="site_plan" :value="__('Gambar Siteplan')" />
-                            <input id="site_plan" name="site_plan" type="file" class="block mt-1 w-full" />
-                            <x-input-error :messages="$errors->get('site_plan')" class="mt-2" />
-                            @if ($project->site_plan)
-                                <div class="mt-2">
-                                    <p class="text-sm text-gray-600">Siteplan saat ini:</p>
-                                    <img src="{{ asset('storage/' . $project->site_plan) }}" alt="Siteplan"
-                                        class="w-48 h-auto mt-1 rounded">
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Nama Perumahan --}}
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-6 text-gray-800">1. Informasi Utama Proyek</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <x-input-label for="name" :value="__('Nama Perumahan')" />
-                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
-                                :value="old('name', $project->name)" required autofocus />
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $project->name)" required />
                         </div>
-
-                        {{-- Nama Pengembang --}}
-                        {{-- Tipe Proyek --}}
-                        <div class="mt-4">
+                        <div>
+                            <x-input-label for="developer_name" :value="__('Nama Developer')" />
+                            <x-text-input id="developer_name" name="developer_name" type="text" class="mt-1 block w-full" :value="old('developer_name', $project->developer_name)" required />
+                        </div>
+                        <div>
                             <x-input-label for="type" :value="__('Tipe Proyek')" />
-                            <select id="type" name="type"
-                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="Komersil"
-                                    {{ old('type', $project->type) == 'Komersil' ? 'selected' : '' }}>Komersil</option>
-                                <option value="Subsidi"
-                                    {{ old('type', $project->type) == 'Subsidi' ? 'selected' : '' }}>Subsidi</option>
+                            <select id="type" name="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="Komersil" {{ old('type', $project->type) == 'Komersil' ? 'selected' : '' }}>Komersil</option>
+                                <option value="Subsidi" {{ old('type', $project->type) == 'Subsidi' ? 'selected' : '' }}>Subsidi</option>
                             </select>
-                            <x-input-error :messages="$errors->get('type')" class="mt-2" />
                         </div>
+                    </div>
+                </div>
 
-                        
-
-                        {{-- Gambar Utama --}}
-                        <div class="mt-4">
-                            <x-input-label for="image" :value="__('Gambar Utama (Opsional)')" />
-                            <x-text-input id="image" class="block mt-1 w-full border p-2 rounded-md" type="file"
-                                name="image" />
-                            <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-6 text-gray-800">2. Lokasi</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <x-input-label for="address" :value="__('Alamat Lengkap')" />
+                            <textarea id="address" name="address" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('address', $project->address) }}</textarea>
                         </div>
-
-                        {{-- Menampilkan Gambar Saat Ini --}}
-                        @if ($project->image)
-                            <div class="mt-4">
-                                <p class="block font-medium text-sm text-gray-700">Gambar saat ini:</p>
-                                <img src="{{ asset('storage/' . $project->image) }}" alt="{{ $project->name }}"
-                                    class="w-48 h-auto rounded-md mt-2 border p-1">
-                            </div>
-                        @endif
-
-                        {{-- Alamat --}}
-                        <div class="mt-4">
-                            <x-input-label for="address" :value="__('Alamat')" />
-                            <textarea id="address" name="address" rows="3"
-                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                required>{{ old('address', $project->address) }}</textarea>
-                            <x-input-error :messages="$errors->get('address')" class="mt-2" />
+                        <div>
+                            <x-input-label for="district_code" :value="__('Kecamatan')" />
+                            <select id="district_code" name="district_code" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="">Pilih Kecamatan</option>
+                                @foreach ($districts as $code => $name)
+                                    <option value="{{ $code }}" {{ old('district_code', $project->district_code) == $code ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
+                            </select>
                         </div>
-
-                        {{-- 2. Mengganti input Kecamatan dan Desa dengan Dropdown --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <x-input-label for="district_code" :value="__('Kecamatan')" />
-                                <select name="district_code" id="district_code"
-                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                    required>
-                                    <option>Pilih Kecamatan</option>
-                                    @foreach ($districts as $code => $name)
-                                        <option value="{{ $code }}"
-                                            {{ old('district_code', $project->district_code) == $code ? 'selected' : '' }}>
-                                            {{ $name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <x-input-error :messages="$errors->get('district_code')" class="mt-2" />
-                            </div>
-                            <div>
-                                <x-input-label for="village_code" :value="__('Desa/Kelurahan')" />
-                                <select name="village_code" id="village_code"
-                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                    required>
-                                    <option>Pilih Desa/Kelurahan</option>
-                                    {{-- Opsi desa akan diisi oleh JavaScript --}}
-                                    @foreach ($villages as $code => $name)
-                                        <option value="{{ $code }}"
-                                            {{ old('village_code', $project->village_code) == $code ? 'selected' : '' }}>
-                                            {{ $name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <x-input-error :messages="$errors->get('village_code')" class="mt-2" />
-                            </div>
+                        <div>
+                            <x-input-label for="village_code" :value="__('Desa/Kelurahan')" />
+                            <select id="village_code" name="village_code" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @foreach($villages as $code => $name)
+                                    <option value="{{ $code }}" {{ old('village_code', $project->village_code) == $code ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
+                            </select>
                         </div>
-
-                        {{-- Deskripsi --}}
-                        <div class="mt-4">
-                            <x-input-label for="description" :value="__('Deskripsi')" />
-                            <textarea id="description" name="description" rows="5"
-                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
+                         <div>
+                            <x-input-label for="description" :value="__('Deskripsi Singkat')" />
+                            <textarea id="description" name="description" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
                         </div>
-
-                        {{-- Latitude & Longitude --}}
+                    </div>
+                    <div class="mt-6">
+                        <label class="block font-medium text-sm text-gray-700">Pilih Titik Koordinat (Latitude & Longitude)</label>
+                        <div id="map" class="mt-2 h-64 w-full rounded-md shadow-sm"></div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <x-input-label for="latitude" :value="__('Latitude')" />
-                                <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude"
-                                    :value="old('latitude', $project->latitude)" />
-                                <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
+                                <x-text-input id="latitude" name="latitude" type="text" class="mt-1 block w-full bg-gray-100" :value="old('latitude', $project->latitude ?? '-7.2278')" readonly/>
                             </div>
                             <div>
                                 <x-input-label for="longitude" :value="__('Longitude')" />
-                                <x-text-input id="longitude" class="block mt-1 w-full" type="text" name="longitude"
-                                    :value="old('longitude', $project->longitude)" />
-                                <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
+                                <x-text-input id="longitude" name="longitude" type="text" class="mt-1 block w-full bg-gray-100" :value="old('longitude', $project->longitude ?? '107.9087')" readonly/>
                             </div>
                         </div>
-
-
-                        {{-- Tombol Simpan --}}
-                        <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('admin.projects.index') }}"
-                                class="text-sm text-gray-600 hover:text-gray-900 mr-4">
-                                Batal
-                            </a>
-                            <x-primary-button>
-                                {{ __('Simpan Perubahan') }}
-                            </x-primary-button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-6 text-gray-800">3. Media</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <x-input-label for="image" :value="__('Ganti Gambar Utama (Thumbnail)')" />
+                            <input id="image" name="image" type="file" class="mt-1 block w-full" onchange="previewImage(event, 'image-preview')">
+                            <img id="image-preview" src="{{ $project->image ? asset('storage/' . $project->image) : '' }}" alt="Image Preview" class="mt-4 rounded-md shadow-sm" style="{{ $project->image ? '' : 'display:none;' }} max-height: 200px;">
+                        </div>
+                        <div>
+                            <x-input-label for="site_plan" :value="__('Ganti Gambar Site Plan')" />
+                            <input id="site_plan" name="site_plan" type="file" class="mt-1 block w-full" onchange="previewImage(event, 'site_plan-preview')">
+                            <img id="site_plan-preview" src="{{ $project->site_plan ? asset('storage/' . $project->site_plan) : '' }}" alt="Site Plan Preview" class="mt-4 rounded-md shadow-sm" style="{{ $project->site_plan ? '' : 'display:none;' }} max-height: 200px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-4">
+                     <a href="{{ route('admin.projects.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">Batal</a>
+                    <x-primary-button>{{ __('Simpan Perubahan') }}</x-primary-button>
+                </div>
+            </form>
         </div>
     </div>
 
-    {{-- 3. Menambahkan script untuk dependent dropdown --}}
     @push('scripts')
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#district_code').on('change', function() {
-                    var districtCode = $(this).val();
-                    if (districtCode) {
-                        $.ajax({
-                            url: '{{ route('dependent-dropdown.villages') }}',
-                            type: "GET",
-                            data: {
-                                district_code: districtCode,
-                                _token: '{{ csrf_token() }}'
-                            },
-                            dataType: "json",
-                            success: function(data) {
-                                if (data) {
-                                    $('#village_code').empty();
-                                    $('#village_code').append(
-                                        '<option>Pilih Desa/Kelurahan</option>');
-                                    $.each(data, function(key, value) {
-                                        $('#village_code').append('<option value="' + key +
-                                            '">' + value + '</option>');
-                                    });
-                                } else {
-                                    $('#village_code').empty();
-                                }
-                            }
-                        });
-                    } else {
-                        $('#village_code').empty();
-                        $('#village_code').append('<option>Pilih Kecamatan Terlebih Dahulu</option>');
-                    }
-                });
-            });
-        </script>
-    @endpush
+    <script>
+        function previewImage(event, previewId) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById(previewId);
+                output.src = reader.result;
+                output.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const districtSelect = document.getElementById('district_code');
+            const villageSelect = document.getElementById('village_code');
+            const oldVillage = "{{ old('village_code', $project->village_code) }}";
+
+            function fetchVillages(districtCode, selectedVillage = null) {
+                if (!districtCode) return;
+                fetch(`/get-villages/${districtCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        villageSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+                        for (const code in data) {
+                            const option = document.createElement('option');
+                            option.value = code;
+                            option.textContent = data[code];
+                            if (code === selectedVillage) {
+                                option.selected = true;
+                            }
+                            villageSelect.appendChild(option);
+                        }
+                    });
+            }
+            districtSelect.addEventListener('change', () => fetchVillages(districtSelect.value));
+            
+            // Peta Leaflet
+            const latInput = document.getElementById('latitude');
+            const lonInput = document.getElementById('longitude');
+            const map = L.map('map').setView([latInput.value, lonInput.value], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            let marker = L.marker([latInput.value, lonInput.value]).addTo(map);
+
+            map.on('click', function(e) {
+                latInput.value = e.latlng.lat;
+                lonInput.value = e.latlng.lng;
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker(e.latlng).addTo(map);
+            });
+        });
+    </script>
+    @endpush
 </x-app-layout>

@@ -1,185 +1,107 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<head>
-    <meta charset="utf-t">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Detail: {{ $project->name }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        .hero-section {
-            background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.2)), url('{{ $project->image ? asset('storage/' . $project->image) : 'https://via.placeholder.com/1200x400.png?text=Lokasi+Perumahan' }}');
-            background-size: cover;
-            background-position: center;
-        }
-        [x-cloak] { display: none !important; }
-    </style>
-</head>
-
-<body class="antialiased bg-gray-100">
-
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600">SIPGAR</a>
-                <nav>
-                    <a href="{{ route('home') }}" class="text-sm font-semibold text-gray-600 hover:text-indigo-600">&larr; Kembali</a>
-                </nav>
-            </div>
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Detail Proyek: <span class="font-normal">{{ $project->name }}</span>
+            </h2>
+            <a href="{{ route('admin.projects.index') }}"
+                class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali ke Daftar Proyek
+            </a>
         </div>
-    </header>
+    </x-slot>
 
-    <section class="hero-section text-white py-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 class="text-5xl font-extrabold tracking-tight drop-shadow-lg">{{ $project->name }}</h1>
-            <p class="mt-4 text-lg max-w-3xl opacity-95">
-                {{ $project->address }}, {{ optional($project->village)->name }}, {{ optional($project->district)->name }}
-                <br>
-                <span class="font-semibold">Pengembang:</span> {{ $project->developer_name }}
-            </p>
-        </div>
-    </section>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
-    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'tipe' }">
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8 px-8" aria-label="Tabs">
-                    <button @click="activeTab = 'tipe'" :class="activeTab === 'tipe' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Tipe Rumah</button>
-                    <button @click="activeTab = 'detail'" :class="activeTab === 'detail' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Detail Proyek</button>
-                    <button @click="activeTab = 'galeri'" :class="activeTab === 'galeri' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Galeri</button>
-                    <button @click="activeTab = 'siteplan'" :class="activeTab === 'siteplan' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Siteplan</button>
-                </nav>
-            </div>
-
-            <div class="p-6 md:p-8">
-                {{-- TAB: TIPE RUMAH (DEFAULT) --}}
-                <div x-show="activeTab === 'tipe'" x-cloak>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Tipe Rumah Tersedia</h2>
-                    <div class="space-y-12">
-                        @forelse ($project->houseTypes as $type)
-                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 border-b pb-8 last:border-b-0">
-                                <div class="lg:col-span-1">
-                                    <h3 class="text-xl font-bold text-indigo-700 mb-3">{{ $type->name }}</h3>
-                                    <img src="{{ $type->image ? asset('storage/' . $type->image) : 'https://via.placeholder.com/400x250.png?text=Foto+Tipe' }}" alt="Foto {{ $type->name }}" class="rounded-lg shadow-md w-full object-cover aspect-video">
-                                </div>
-                                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-700 mb-2">Spesifikasi</h4>
-                                        <ul class="text-gray-600 space-y-1 text-sm">
-                                            <li><strong>Harga:</strong> <span class="text-green-600 font-bold">Rp {{ number_format($type->price, 0, ',', '.') }}</span></li>
-                                            <li><strong>Luas Bangunan:</strong> {{ $type->building_area }} m²</li>
-                                            <li><strong>Luas Lahan:</strong> {{ $type->land_area }} m²</li>
-                                        </ul>
-                                        @if($type->specifications)
-                                        <h4 class="font-semibold text-gray-700 mt-4 mb-2">Spesifikasi Teknis</h4>
-                                        <ul class="text-gray-600 space-y-1 text-sm">
-                                            @foreach(json_decode($type->specifications) as $key => $value)
-                                            <li><strong>{{ $key }}:</strong> {{ $value }}</li>
-                                            @endforeach
-                                        </ul>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-700 mb-2">Denah</h4>
-                                        <img src="{{ $type->floor_plan ? asset('storage/' . $type->floor_plan) : 'https://via.placeholder.com/400x250.png?text=Denah' }}" alt="Denah {{ $type->name }}" class="rounded-lg border w-full object-cover aspect-video">
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <p class="text-center text-gray-500 py-8">Belum ada tipe rumah yang ditambahkan.</p>
-                        @endforelse
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                {{-- Bagian informasi proyek tidak perlu diubah, biarkan seperti sebelumnya --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-2">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $project->name }}</h3>
+                        <p class="text-md text-gray-600 mt-1">oleh {{ $project->developer_name }}</p>
+                        <span class="inline-block bg-indigo-100 text-indigo-800 text-sm font-semibold mt-4 px-3 py-1 rounded-full">{{ $project->type }}</span>
+                        <p class="mt-6 text-gray-700 leading-relaxed">{{ $project->description }}</p>
+                        <div class="mt-6 border-t pt-6">
+                            <h4 class="font-semibold text-gray-800">Detail Lokasi:</h4>
+                            <p class="text-gray-600 mt-2">{{ $project->address }}, {{ optional($project->village)->name }}, {{ optional($project->district)->name }}</p>
+                            @if($project->latitude && $project->longitude)
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ $project->latitude }},{{ $project->longitude }}" target="_blank" class="text-sm text-indigo-600 hover:underline mt-2 inline-block">Lihat di Google Maps</a>
+                            @endif
+                        </div>
                     </div>
-                </div>
-
-                {{-- TAB: DETAIL --}}
-                <div x-show="activeTab === 'detail'" x-cloak>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Informasi Proyek</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="md:col-span-1 space-y-4">
                         <div>
-                            <h3 class="text-lg font-semibold mb-2">Peta Lokasi</h3>
-                            <div id="map" class="h-96 w-full rounded-lg border"></div>
+                            <label class="block text-sm font-medium text-gray-700">Gambar Utama</label>
+                            <img src="{{ $project->image ? asset('storage/' . $project->image) : 'https://via.placeholder.com/400x300' }}" alt="Gambar Proyek" class="mt-2 rounded-lg shadow-md w-full h-auto object-cover">
                         </div>
-                        <div class="space-y-6">
-                             <div>
-                                <h3 class="text-lg font-semibold">Deskripsi</h3>
-                                <p class="text-gray-600 mt-1 prose max-w-none">{{ $project->description ?: 'Tidak ada deskripsi.' }}</p>
-                            </div>
-                             <div>
-                                <h3 class="text-lg font-semibold">Kantor Pemasaran</h3>
-                                <p class="text-gray-600 mt-1">{{ $project->address }}</p>
-                            </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Site Plan</label>
+                            <img src="{{ $project->site_plan ? asset('storage/' . $project->site_plan) : 'https://via.placeholder.com/400x300' }}" alt="Site Plan" class="mt-2 rounded-lg shadow-md w-full h-auto object-cover">
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {{-- TAB: GALERI --}}
-                <div x-show="activeTab === 'galeri'" x-cloak>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Galeri Foto</h2>
-                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        @if ($project->image)
-                            <a href="{{ asset('storage/' . $project->image) }}" target="_blank"><img src="{{ asset('storage/' . $project->image) }}" alt="Foto Utama" class="aspect-video w-full object-cover rounded-lg shadow hover:shadow-xl transition-shadow"></a>
-                        @endif
-                        @forelse($project->images as $image)
-                            <a href="{{ asset('storage/' . $image->path) }}" target="_blank"><img src="{{ asset('storage/' . $image->path) }}" alt="Foto Galeri" class="aspect-video w-full object-cover rounded-lg shadow hover:shadow-xl transition-shadow"></a>
-                        @empty
-                            @if (!$project->image)<p class="col-span-full text-center text-gray-500 py-8">Tidak ada foto.</p>@endif
-                        @endforelse
-                    </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Manajemen Tipe Rumah</h3>
+                    {{-- Tombol ini akan mengarah ke form tambah tipe rumah --}}
+                    <a href="{{ route('admin.projects.house-types.create', $project->id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700">
+                        Tambah Tipe Rumah
+                    </a>
                 </div>
 
-                {{-- TAB: SITEPLAN --}}
-                <div x-show="activeTab === 'siteplan'" x-cloak>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Siteplan</h2>
-                    @if($project->site_plan)
-                        <img src="{{ asset('storage/' . $project->site_plan) }}" alt="Siteplan {{ $project->name }}" class="rounded-lg border w-full">
-                    @else
-                        <div class="bg-gray-200 rounded-lg flex items-center justify-center min-h-[400px]"><p class="text-gray-500">Siteplan Digital Belum Tersedia.</p></div>
-                    @endif
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Unit</th>
+                                <th class="py-3 px-6 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @forelse ($project->houseTypes as $houseType)
+                                <tr>
+                                    <td class="py-4 px-6 whitespace-nowrap font-medium text-gray-900">{{ $houseType->name }}</td>
+                                    <td class="py-4 px-6 whitespace-nowrap text-gray-600">Rp {{ number_format($houseType->price, 0, ',', '.') }}</td>
+                                    <td class="py-4 px-6 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            @if($houseType->status == 'Tersedia') bg-green-100 text-green-800
+                                            @elseif($houseType->status == 'Booking') bg-yellow-100 text-yellow-800
+                                            @else bg-red-100 text-red-800 @endif">
+                                            {{ $houseType->status }}
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 whitespace-nowrap text-gray-600">{{ $houseType->total_units }}</td>
+                                    <td class="py-4 px-6 whitespace-nowrap text-right text-sm font-medium">
+                                        {{-- Tombol Edit --}}
+                                        <a href="{{ route('admin.house-types.edit', $houseType->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        {{-- Tombol Hapus --}}
+                                        <form action="{{ route('admin.house-types.destroy', $houseType->id) }}" method="POST" class="inline-block ml-4" onsubmit="return confirm('Yakin ingin menghapus tipe rumah ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="py-8 px-6 text-center text-gray-500">
+                                        Belum ada tipe rumah untuk proyek ini. Silakan tambahkan.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </main>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const lat = {{ $project->latitude ?? -7.21667 }};
-            const lng = {{ $project->longitude ?? 107.9 }};
-            let mapInitialized = false;
-            let map = null;
-
-            function initMap() {
-                if (mapInitialized) {
-                    setTimeout(() => map.invalidateSize(), 100);
-                    return;
-                };
-                mapInitialized = true;
-
-                map = L.map('map').setView([lat, lng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
-
-                if ({{ $project->latitude ? 'true' : 'false' }}) {
-                    L.marker([lat, lng]).addTo(map).bindPopup('<b>{{ $project->name }}</b>').openPopup();
-                }
-            }
-
-            const observer = new MutationObserver((mutations) => {
-                for (const mutation of mutations) {
-                    if (mutation.attributeName === 'style' && mutation.target.style.display !== 'none' && mutation.target.getAttribute('x-show') === 'activeTab === \'detail\'') {
-                        initMap();
-                        break;
-                    }
-                }
-            });
-
-            const mapContainerParent = document.querySelector('[x-show="activeTab === \'detail\'"]');
-            if(mapContainerParent) {
-                 observer.observe(mapContainerParent, { attributes: true });
-            }
-        });
-    </script>
-</body>
-</html>
+    </div>
+</x-app-layout>

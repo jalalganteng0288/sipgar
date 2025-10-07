@@ -73,9 +73,11 @@
                                         {{ $type->name }} <span class="text-sm font-normal text-gray-500">(ID:
                                             {{ $type->id }})</span>
                                     </h3>
-                                    <img src="{{ $type->image ? asset('storage/' . $type->image) : 'https://via.placeholder.com/400x250.png?text=Foto+Tipe' }}"
+                                    <img src="{{ $type->image ? asset('storage/' . $type->image) : 'https://via.placeholder.com/400x250.png?text=Foto+Tidak+Tersedia' }}"
                                         alt="Foto {{ $type->name }}"
                                         class="rounded-lg shadow-md w-full object-cover aspect-video">
+                                    {{-- AKHIR PERBAIKAN --}}
+
                                 </div>
                                 <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>

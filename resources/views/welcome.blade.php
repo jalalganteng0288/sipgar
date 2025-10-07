@@ -60,10 +60,11 @@
                         class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:-translate-y-1">
                         LOGIN PENGEMBANG
                     </a>
-                    <a href="{{ route('charts.index') }}"
+                    <a href="{{ route('charts.index.public') }}"
                         class="px-5 py-2.5 bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-all duration-300 transform hover:-translate-y-1">
                         GRAFIK PERUMAHAN
                     </a>
+
                 </div>
                 <div class="border-b border-gray-200 mb-6">
                     <nav class="-mb-px flex space-x-6" aria-label="Tabs">
@@ -375,14 +376,15 @@
                 villageSelect.innerHTML = '<option value="">Memuat...</option>';
                 villageSelect.disabled = true;
 
-                fetch(`{{ route('dependent-dropdown.villages') }}?district_code=${districtCode}`)
+                fetch(`/get-villages/${districtCode}`)
                     .then(response => response.json())
                     .then(data => {
                         villageSelect.innerHTML = '<option value="">Semua Desa</option>';
-                        for (const code in data) {
+                        // Di sini kita gunakan Object.entries agar lebih modern
+                        for (const [code, name] of Object.entries(data)) {
                             const option = document.createElement('option');
                             option.value = code;
-                            option.textContent = data[code];
+                            option.textContent = name;
                             villageSelect.appendChild(option);
                         }
                         villageSelect.disabled = false;
@@ -396,16 +398,21 @@
             districtSelect.addEventListener('change', function() {
                 fetchVillages(this.value);
             });
+        }
 
-            if (districtSelect.value) {
-                fetchVillages(districtSelect.value);
-                setTimeout(() => {
-                    const oldVillage = "{{ request('village') }}";
-                    if (oldVillage) {
-                        villageSelect.value = oldVillage;
-                    }
-                }, 500);
-            }
+        districtSelect.addEventListener('change', function() {
+            fetchVillages(this.value);
+        });
+
+        if (districtSelect.value) {
+            fetchVillages(districtSelect.value);
+            setTimeout(() => {
+                const oldVillage = "{{ request('village') }}";
+                if (oldVillage) {
+                    villageSelect.value = oldVillage;
+                }
+            }, 500);
+        }
         });
     </script>
 

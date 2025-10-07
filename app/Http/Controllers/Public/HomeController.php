@@ -3,102 +3,121 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\HouseType;
 use App\Models\HousingProject;
-use App\Models\HouseType; // <-- TAMBAHKAN INI
+use App\Models\Indonesia\District;
 use Illuminate\Http\Request;
-use Laravolt\Indonesia\Models\District;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
+        // Bagian filter pencarian Anda (tidak perlu diubah)
+        $query = HousingProject::with('houseTypes', 'district', 'village');
+        if ($request->filled('district_code')) {
+            $query->where('district_code', $request->district_code);
+        }
+        if ($request->filled('village_code')) {
+            $query->where('village_code', $request->village_code);
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('developer_name')) {
+            $query->where('developer_name', 'like', '%' . $request->developer_name . '%');
+        }
+        $projects = $query->latest()->paginate(10);
         $districts = District::where('city_code', 3205)->get();
-        $query = HousingProject::with('district', 'houseTypes');
 
-        // ... (Logika filter pencarian Anda tetap di sini) ...
-        // Filter berdasarkan NAMA PERUMAHAN
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-        // Filter berdasarkan KECAMATAN
-        if ($request->filled('district')) {
-            $query->where('district_code', $request->district);
-        }
-        // Filter berdasarkan DESA
-        if ($request->filled('village')) {
-            $query->where('village_code', $request->village);
-        }
-        // Filter berdasarkan RENTANG HARGA
-        if ($request->filled('price_min')) {
-            $query->whereHas('houseTypes', function ($q) use ($request) {
-                $q->where('price', '>=', $request->price_min);
-            });
-        }
-        if ($request->filled('price_max')) {
-            $query->whereHas('houseTypes', function ($q) use ($request) {
-                $q->where('price', '<=', $request->price_max);
-            });
-        }
-        // Filter berdasarkan ID LOKASI
-        if ($request->filled('project_id')) {
-            $query->where('id', $request->project_id);
-        }
-        // Filter berdasarkan ID RUMAH
-        if ($request->filled('house_type_id')) {
-            $query->whereHas('houseTypes', function ($q) use ($request) {
-                $q->where('id', $request->house_type_id);
-            });
-        }
+        // ===============================================================
+        // AWAL DARI LOGIKA STATISTIK FINAL
+        // ===============================================================
 
-        $projects = $query->latest()->paginate(9)->withQueryString();
-
-        // +++ KODE BARU UNTUK STATISTIK LENGKAP +++
-        $allHouseTypes = HouseType::with('housingProject')->get();
+        // 1. Statistik utama (ini sudah bekerja dengan baik)
         $stats = [
             'total_developers' => HousingProject::distinct('developer_name')->count(),
             'total_locations' => HousingProject::count(),
-            'total_units' => $allHouseTypes->sum('total_units'),
-            'komersil' => [
-                'kavling' => $allHouseTypes->where('housingProject.type', 'Komersil')->where('status', 'Kavling')->sum('total_units'),
-                'pembangunan' => $allHouseTypes->where('housingProject.type', 'Komersil')->where('status', 'Pembangunan')->sum('total_units'),
-                'ready_stock' => $allHouseTypes->where('housingProject.type', 'Komersil')->where('status', 'Ready Stock')->sum('total_units'),
-                'dipesan' => $allHouseTypes->where('housingProject.type', 'Komersil')->where('status', 'Dipesan')->sum('total_units'),
-                'terjual' => $allHouseTypes->where('housingProject.type', 'Komersil')->where('status', 'Terjual')->sum('total_units'),
-            ],
-            'subsidi' => [
-                'kavling' => $allHouseTypes->where('housingProject.type', 'Subsidi')->where('status', 'Kavling')->sum('total_units'),
-                'pembangunan' => $allHouseTypes->where('housingProject.type', 'Subsidi')->where('status', 'Pembangunan')->sum('total_units'),
-                'ready_stock' => $allHouseTypes->where('housingProject.type', 'Subsidi')->where('status', 'Ready Stock')->sum('total_units'),
-                'proses_bank' => $allHouseTypes->where('housingProject.type', 'Subsidi')->where('status', 'Proses Bank')->sum('total_units'),
-                'terjual' => $allHouseTypes->where('housingProject.type', 'Subsidi')->where('status', 'Terjual')->sum('total_units'),
-            ],
+            'total_units' => HouseType::sum('total_units'),
         ];
-        // Hitung total antrian untuk Komersil dan Subsidi
-        $stats['komersil']['antrian'] = array_sum($stats['komersil']);
-        $stats['subsidi']['antrian'] = array_sum($stats['subsidi']);
 
+        // 2. Siapkan kerangka untuk statistik detail dengan nilai awal 0
+        $stats['komersil'] = [
+            'kavling' => 0,
+            'pembangunan' => 0,
+            'ready_stock' => 0,
+            'dipesan' => 0,
+            'terjual' => 0,
+            'antrian' => 0
+        ];
+        $stats['subsidi'] = [
+            'kavling' => 0,
+            'pembangunan' => 0,
+            'ready_stock' => 0,
+            'proses_bank' => 0,
+            'terjual' => 0,
+            'antrian' => 0
+        ];
+
+        // 3. Ambil semua data agregat dalam satu query efisien
+        $unitStats = HouseType::join('housing_projects', 'house_types.housing_project_id', '=', 'housing_projects.id')
+            ->select('housing_projects.type', 'house_types.status', DB::raw('SUM(house_types.total_units) as total'))
+            ->groupBy('housing_projects.type', 'house_types.status')
+            ->get();
+
+        // 4. Proses hasil query dengan logika pemetaan yang fleksibel
+        foreach ($unitStats as $stat) {
+            $type = strtolower($stat->type); // 'komersil' atau 'subsidi'
+            $rawStatus = strtolower($stat->status); // status mentah dari DB, mis: 'ready stock'
+            $targetKey = null; // Kunci target di array $stats
+
+            // Logika pemetaan: Mencocokkan berbagai kemungkinan nama status ke satu kunci target
+            switch ($rawStatus) {
+                case 'kavling':
+                    $targetKey = 'kavling';
+                    break;
+                case 'pembangunan':
+                    $targetKey = 'pembangunan';
+                    break;
+                case 'ready stock':
+                case 'tersedia': // <-- Ini akan menangani data lama Anda
+                    $targetKey = 'ready_stock';
+                    break;
+                case 'dipesan':
+                case 'booking': // <-- Ini juga menangani variasi
+                    $targetKey = 'dipesan';
+                    break;
+                case 'proses bank':
+                    $targetKey = 'proses_bank';
+                    break;
+                case 'terjual':
+                    $targetKey = 'terjual';
+                    break;
+            }
+
+            // Jika ada kunci target yang cocok, tambahkan jumlahnya
+            if ($targetKey && isset($stats[$type][$targetKey])) {
+                $stats[$type][$targetKey] += (int)$stat->total;
+            }
+        }
+
+        // 5. Hitung total antrian berdasarkan hasil yang sudah dipetakan
+        $stats['komersil']['antrian'] = $stats['komersil']['kavling'] + $stats['komersil']['pembangunan'] + $stats['komersil']['ready_stock'] + $stats['komersil']['dipesan'] + $stats['komersil']['terjual'];
+        $stats['subsidi']['antrian'] = $stats['subsidi']['kavling'] + $stats['subsidi']['pembangunan'] + $stats['subsidi']['ready_stock'] + $stats['subsidi']['proses_bank'] + $stats['subsidi']['terjual'];
+
+        // ===============================================================
+        // AKHIR DARI LOGIKA STATISTIK FINAL
+        // ===============================================================
 
         return view('welcome', compact('projects', 'districts', 'stats'));
     }
 
     public function show(HousingProject $project)
     {
-        $project->load('houseTypes', 'district.city.province', 'village', 'images');
+        // Memuat relasi yang diperlukan untuk ditampilkan di view
+        $project->load('houseTypes', 'district', 'village', 'images');
+
+        // Mengarahkan ke view 'projects.show' dengan data proyek
         return view('projects.show', compact('project'));
-    }
-
-    // +++ METHOD BARU YANG DITAMBAHKAN UNTUK API PETA +++
-    public function getAllProjectsForMap()
-    {
-        $projects = HousingProject::select('name', 'latitude', 'longitude', 'id')->get()->map(function ($project) {
-            return [
-                'name' => $project->name,
-                'latitude' => $project->latitude,
-                'longitude' => $project->longitude,
-                'url' => route('projects.show', $project->id)
-            ];
-        });
-
-        return response()->json($projects);
     }
 }
