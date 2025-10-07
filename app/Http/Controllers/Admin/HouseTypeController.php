@@ -22,8 +22,9 @@ class HouseTypeController extends Controller
         $request->validate([
             'housing_project_id' => 'required|exists:housing_projects,id',
             'name' => 'required|string|max:255',
+            'status' => 'required|string',
             'price' => 'required|numeric',
-            'description' => 'nullable|string',
+            'total_units' => 'required|integer',
         ]);
 
         HouseType::create($request->all());
@@ -43,10 +44,11 @@ class HouseTypeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'status' => 'required|string',
             'price' => 'required|numeric',
             'land_area' => 'required|numeric',
             'building_area' => 'required|numeric',
-            'units_available' => 'required|integer',
+            'total_units' => 'required|integer',
             'image' => 'nullable|image|max:2048',
             'floor_plan' => 'nullable|image|max:2048',
             'specifications' => 'nullable|json',

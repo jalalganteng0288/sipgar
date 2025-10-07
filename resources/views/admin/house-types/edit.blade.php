@@ -13,11 +13,31 @@
                         @csrf
                         @method('PUT')
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Status Unit --}}
                             <div>
-                                <x-input-label for="name" :value="__('Nama Tipe')" />
-                                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
-                                    :value="old('name', $houseType->name)" required autofocus />
-                                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                <x-input-label for="status" :value="__('Status Unit')" />
+                                <select id="status" name="status"
+                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                    <option value="Ready Stock"
+                                        {{ old('status', $houseType->status) == 'Ready Stock' ? 'selected' : '' }}>Ready
+                                        Stock</option>
+                                    <option value="Kavling"
+                                        {{ old('status', $houseType->status) == 'Kavling' ? 'selected' : '' }}>Kavling
+                                    </option>
+                                    <option value="Pembangunan"
+                                        {{ old('status', $houseType->status) == 'Pembangunan' ? 'selected' : '' }}>
+                                        Pembangunan</option>
+                                    <option value="Dipesan"
+                                        {{ old('status', $houseType->status) == 'Dipesan' ? 'selected' : '' }}>Dipesan
+                                    </option>
+                                    <option value="Proses Bank"
+                                        {{ old('status', $houseType->status) == 'Proses Bank' ? 'selected' : '' }}>
+                                        Proses Bank</option>
+                                    <option value="Terjual"
+                                        {{ old('status', $houseType->status) == 'Terjual' ? 'selected' : '' }}>Terjual
+                                    </option>
+                                </select>
+                                <x-input-error :messages="$errors->get('status')" class="mt-2" />
                             </div>
 
                             <div class="mt-4">

@@ -17,12 +17,13 @@ class HouseType extends Model
     protected $fillable = [
         'housing_project_id',
         'name',
+        'status',
         'image', // Tambahkan ini
         'floor_plan', // Tambahkan ini
         'price',
         'land_area',
         'building_area',
-        'units_available',
+        'total_units',
         'specifications',
     ];
 

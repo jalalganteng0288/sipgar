@@ -38,22 +38,20 @@
                         </div>
 
                         {{-- Nama Pengembang --}}
+                        {{-- Tipe Proyek --}}
                         <div class="mt-4">
-                            <x-input-label for="developer_name" :value="__('Nama Pengembang')" />
-                            <x-text-input id="developer_name" class="block mt-1 w-full" type="text"
-                                name="developer_name" :value="old('developer_name', $project->developer_name)" required />
-                            <x-input-error :messages="$errors->get('developer_name')" class="mt-2" />
+                            <x-input-label for="type" :value="__('Tipe Proyek')" />
+                            <select id="type" name="type"
+                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="Komersil"
+                                    {{ old('type', $project->type) == 'Komersil' ? 'selected' : '' }}>Komersil</option>
+                                <option value="Subsidi"
+                                    {{ old('type', $project->type) == 'Subsidi' ? 'selected' : '' }}>Subsidi</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('type')" class="mt-2" />
                         </div>
 
-                        <div class="mt-4">
-                            <x-input-label for="specifications" :value="__('Spesifikasi Teknis (Format JSON)')" />
-                            <textarea id="specifications" name="specifications" rows="10"
-                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm font-mono text-sm">
-        {{ old('specifications', json_encode($houseType->specifications, JSON_PRETTY_PRINT)) }}
-    </textarea>
-                            <p class="mt-1 text-xs text-gray-500">Contoh: {"Pondasi": "Batu Kali", "Dinding": "Bata
-                                Merah"}</p>
-                        </div>
+                        
 
                         {{-- Gambar Utama --}}
                         <div class="mt-4">

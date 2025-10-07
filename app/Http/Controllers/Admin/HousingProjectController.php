@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Pastikan ini ada
+use Illuminate\Support\Facades\Storage;
 use App\Models\Indonesia\District;
 use App\Models\Indonesia\Village;
-
 
 class HousingProjectController extends Controller
 {
@@ -26,11 +25,7 @@ class HousingProjectController extends Controller
      */
     public function create()
     {
-        // Ambil semua kecamatan di Kabupaten Garut (kode: 3205)
-        // lalu ubah formatnya menjadi [kode => nama]
         $districts = District::where('city_code', 3205)->pluck('name', 'code');
-
-        // Kirim data districts ke view
         return view('admin.projects.create', compact('districts'));
     }
 
@@ -39,28 +34,30 @@ class HousingProjectController extends Controller
      */
     public function store(Request $request)
     {
-        // --- VALIDASI DIGABUNGKAN DENGAN VALIDASI GAMBAR ---
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validasi gambar
+            'type' => 'required|string|in:Komersil,Subsidi',
             'address' => 'required|string',
             'district_code' => 'required|exists:districts,code',
             'village_code' => 'required|exists:villages,code',
-            'description' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'site_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->except('image'); // Ambil semua data kecuali gambar
+        $data = $validated;
 
-        // --- LOGIKA UNTUK MENYIMPAN GAMBAR ---
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('projects', 'public');
-            $data['image'] = $path;
+            $data['image'] = $request->file('image')->store('project-images', 'public');
+        }
+        if ($request->hasFile('site_plan')) {
+            $data['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
         }
 
-        HousingProject::create($data); // Simpan data ke database
+        HousingProject::create($data);
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil ditambahkan.');
     }
@@ -70,9 +67,7 @@ class HousingProjectController extends Controller
      */
     public function show(HousingProject $project)
     {
-        // Tambahkan baris ini untuk memuat data Tipe Rumah
         $project->load('houseTypes');
-
         return view('admin.projects.show', ['project' => $project]);
     }
 
@@ -96,37 +91,50 @@ class HousingProjectController extends Controller
      */
     public function update(Request $request, HousingProject $project)
     {
-        // --- VALIDASI DIGABUNGKAN DENGAN VALIDASI GAMBAR ---
-        $validated = $request->validate([
+        // ===============================================================
+        // KODE PERBAIKAN ADA DI SINI
+        // ===============================================================
+
+        // 1. Validasi semua input dari form
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
+            'type' => 'required|string|in:Komersil,Subsidi',
             'address' => 'required|string',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048', // Foto Utama
-            'site_plan' => 'nullable|image|max:2048', // Tambahkan validasi siteplan
+            'image' => 'nullable|image|max:2048',
+            'site_plan' => 'nullable|image|max:2048',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'district_code' => 'required',
             'village_code' => 'required',
         ]);
 
+        // 2. Isi semua data teks ke proyek
+        $project->fill($validatedData);
+
+        // 3. Proses upload gambar utama JIKA ADA file baru
         if ($request->hasFile('image')) {
             // Hapus gambar lama jika ada
             if ($project->image) {
                 Storage::disk('public')->delete($project->image);
             }
-            $validated['image'] = $request->file('image')->store('project-images', 'public');
+            // Simpan gambar baru
+            $project->image = $request->file('image')->store('project-images', 'public');
         }
 
-        // Logika untuk upload site_plan
+        // 4. Proses upload siteplan JIKA ADA file baru
         if ($request->hasFile('site_plan')) {
+            // Hapus siteplan lama jika ada
             if ($project->site_plan) {
                 Storage::disk('public')->delete($project->site_plan);
             }
-            $validated['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
+            // Simpan siteplan baru
+            $project->site_plan = $request->file('site_plan')->store('site-plans', 'public');
         }
 
-        $project->update($validated);
+        // 5. Simpan semua perubahan ke database
+        $project->save();
 
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
     }
@@ -136,9 +144,11 @@ class HousingProjectController extends Controller
      */
     public function destroy(HousingProject $project)
     {
-        // --- LOGIKA UNTUK MENGHAPUS GAMBAR ---
         if ($project->image) {
             Storage::disk('public')->delete($project->image);
+        }
+        if ($project->site_plan) {
+            Storage::disk('public')->delete($project->site_plan);
         }
 
         $project->delete();

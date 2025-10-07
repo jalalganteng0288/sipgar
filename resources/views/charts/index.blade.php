@@ -1,119 +1,137 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Grafik Perumahan - Sipgar</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="antialiased bg-gray-100">
-    {{-- HEADER --}}
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600">SIPGAR</a>
-                <a href="{{ route('home') }}" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-sm text-sm font-semibold">
-                    &larr; Kembali ke Pencarian
-                </a>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Grafik Data Perumahan') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- Bagian Filter --}}
+            <div class="bg-white p-4 rounded-lg shadow-md mb-8">
+                <form action="{{ route('charts.index') }}" method="GET">
+                    <div class="flex items-center space-x-4">
+                        <label for="type" class="text-sm font-medium text-gray-700">Filter berdasarkan Tipe:</label>
+                        <select name="type" id="type" class="form-select rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option value="">Semua Tipe</option>
+                            <option value="Komersil" {{ $currentFilter == 'Komersil' ? 'selected' : '' }}>Komersil</option>
+                            <option value="Subsidi" {{ $currentFilter == 'Subsidi' ? 'selected' : '' }}>Subsidi</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow hover:bg-blue-700 transition">
+                            Terapkan Filter
+                        </button>
+                        <a href="{{ route('charts.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-300 transition">
+                            Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            {{-- Grid untuk Grafik --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {{-- Grafik Sebaran Unit --}}
+                <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <h3 class="text-lg font-semibold mb-1">Sebaran Unit Perumahan</h3>
+                        <p class="text-sm text-gray-500 mb-4">Total unit yang tersedia di setiap kecamatan.</p>
+                        <div style="height: 400px;">
+                            <canvas id="unitsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Grafik Rata-rata Harga --}}
+                <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <h3 class="text-lg font-semibold mb-1">Rata-rata Harga Rumah</h3>
+                        <p class="text-sm text-gray-500 mb-4">Estimasi rata-rata harga rumah di setiap kecamatan.</p>
+                        <div style="height: 400px;">
+                            <canvas id="pricesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </header>
+    </div>
 
-    {{-- KONTEN UTAMA --}}
-    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Grafik Properti Kabupaten Garut</h1>
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const districtNames = @json($districtNames);
+                const unitsPerDistrict = @json($unitsPerDistrict);
+                const avgPricePerDistrict = @json($avgPricePerDistrict);
 
-        {{-- GRAFIK 1: SEBARAN UNIT --}}
-        <div class="bg-white p-6 rounded-lg shadow-lg mb-12">
-            <h2 class="text-xl font-semibold mb-4">Sebaran Unit Rumah per Kecamatan</h2>
-            <div style="height: 600px;">
-                <canvas id="unitsChart"></canvas>
-            </div>
-        </div>
-
-        {{-- GRAFIK 2: RATA-RATA HARGA --}}
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-semibold mb-4">Rata-rata Harga per Meter Persegi (m²)</h2>
-            <div style="height: 400px;">
-                <canvas id="avgPriceChart"></canvas>
-            </div>
-        </div>
-    </main>
-
-    {{-- SCRIPT UNTUK CHART.JS --}}
-    <script type="module">
-        import Chart from 'chart.js/auto';
-
-        (function () {
-            // Data dari Controller
-            const unitsData = @json($unitsPerDistrict);
-            const avgPriceData = @json($avgPricePerDistrict);
-
-            // GRAFIK 1: Sebaran Unit
-            const unitsCtx = document.getElementById('unitsChart').getContext('2d');
-            new Chart(unitsCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(unitsData),
-                    datasets: [{
-                        label: 'Total Unit Tersedia',
-                        data: Object.values(unitsData),
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y', // Membuat bar chart menjadi horizontal
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // GRAFIK 2: Rata-rata Harga
-            const avgPriceCtx = document.getElementById('avgPriceChart').getContext('2d');
-            new Chart(avgPriceCtx, {
-                type: 'bar',
-                data: {
-                    labels: avgPriceData.map(d => d.district_name),
-                    datasets: [
-                        {
-                            label: 'Rata-rata Harga Tanah (per m²)',
-                            data: avgPriceData.map(d => d.avg_price_per_land),
-                            backgroundColor: 'rgba(255, 159, 64, 0.6)',
-                            borderColor: 'rgba(255, 159, 64, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Rata-rata Harga Bangunan (per m²)',
-                            data: avgPriceData.map(d => d.avg_price_per_building),
-                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
+                // Konfigurasi Umum
+                const chartOptions = {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                callback: function(value, index, values) {
-                                    return 'Rp ' + value.toLocaleString('id-ID');
+                            ticks: { color: '#6b7280' },
+                            grid: { color: '#e5e7eb' }
+                        },
+                        x: {
+                            ticks: { color: '#6b7280' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#374151' }
+                        }
+                    }
+                };
+
+                // Grafik untuk Unit
+                new Chart(document.getElementById('unitsChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: districtNames,
+                        datasets: [{
+                            label: 'Jumlah Unit',
+                            data: unitsPerDistrict,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: chartOptions
+                });
+
+                // Grafik untuk Harga
+                new Chart(document.getElementById('pricesChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: districtNames,
+                        datasets: [{
+                            label: 'Rata-rata Harga',
+                            data: avgPricePerDistrict,
+                            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            ...chartOptions.scales,
+                            y: {
+                                ...chartOptions.scales.y,
+                                ticks: {
+                                    ...chartOptions.scales.y.ticks,
+                                    callback: function(value) {
+                                        if (value === 0) return 'Rp 0';
+                                        return 'Rp ' + (value / 1000000).toFixed(0) + ' Jt';
+                                    }
                                 }
                             }
                         }
                     }
-                }
+                });
             });
-        })();
-    </script>
-</body>
-</html>
+        </script>
+    @endpush
+</x-app-layout>

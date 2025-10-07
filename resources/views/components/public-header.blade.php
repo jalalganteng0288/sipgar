@@ -1,12 +1,16 @@
-<nav class="bg-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex-shrink-0 flex items-center">
-                <a href="{{ route('home') }}" class="text-xl font-bold text-gray-800">
-                    Sipgar
-                </a>
-            </div>
+<header class="bg-transparent text-white p-4 z-10 relative">
+    <div class="container mx-auto flex items-center justify-center">
+        <div class="flex items-center">
+            <img src="{{ asset('images/logo-garut.png') }}" alt="Logo Kabupaten Garut" class="h-16 w-auto mr-4">
+            <img src="{{ asset('images/logo-disperkim.png') }}" alt="Logo Disperkim" class="h-16 w-auto">
+        </div>
 
-            </div>
+        <div class="border-l border-white h-16 mx-6"></div>
+
+        <div class="text-center">
+            <h1 class="text-3xl font-bold tracking-wider">SIPGAR</h1>
+            <p class="text-lg">Sistem Informasi Perumahan Kabupaten Garut</p>
+            <p class="text-sm">Dinas Perumahan dan Permukiman</p>
+        </div>
     </div>
-</nav>
+</header>
