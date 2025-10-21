@@ -22,7 +22,6 @@
 
 <body class="antialiased bg-gray-100">
 
-    <x-public-header />
 
     <section class="hero-section text-white py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,6 +36,31 @@
             </p>
         </div>
     </section>
+
+    <div class="mb-8 flex flex-wrap items-center gap-4">
+        {{-- Tombol Kembali ke Beranda --}}
+        <a href="{{ route('home') }}"
+            class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-semibold rounded-md shadow hover:bg-gray-700 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali ke Beranda
+        </a>
+
+        {{-- Tombol Temukan Rute --}}
+        <a href="https://www.google.com/maps/dir/?api=1&destination={{ $project->latitude }},{{ $project->longitude }}"
+            target="_blank"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow hover:bg-blue-700 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v12a1 1 0 00.293.707l6 6a1 1 0 001.414 0l6-6A1 1 0 0018 16V4a1 1 0 00-.293-.707l-6-6a1 1 0 00-1.414 0l-6 6z"
+                    clip-rule="evenodd" />
+            </svg>
+            Temukan Rute
+        </a>
+    </div>
+
 
     <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'tipe' }">
         <div class="bg-white rounded-lg shadow-xl overflow-hidden">

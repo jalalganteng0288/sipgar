@@ -367,52 +367,66 @@
             const villageSelect = document.getElementById('village');
 
             function fetchVillages(districtCode) {
+                // Jika tidak ada kecamatan yang dipilih, reset dropdown desa
                 if (!districtCode) {
                     villageSelect.innerHTML = '<option value="">Pilih Kecamatan Dahulu</option>';
                     villageSelect.disabled = true;
                     return;
                 }
 
+                // Tampilkan status "Memuat..." saat data diambil
                 villageSelect.innerHTML = '<option value="">Memuat...</option>';
                 villageSelect.disabled = true;
 
+                // Ambil data desa dari server menggunakan Fetch API
                 fetch(`/get-villages/${districtCode}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        // Kosongkan pilihan lama dan tambahkan opsi default
                         villageSelect.innerHTML = '<option value="">Semua Desa</option>';
-                        // Di sini kita gunakan Object.entries agar lebih modern
+
+                        // Loop data desa yang diterima dan tambahkan sebagai <option> baru
                         for (const [code, name] of Object.entries(data)) {
                             const option = document.createElement('option');
                             option.value = code;
                             option.textContent = name;
                             villageSelect.appendChild(option);
                         }
+
+                        // Aktifkan kembali dropdown desa
                         villageSelect.disabled = false;
                     })
                     .catch(error => {
                         console.error('Error fetching villages:', error);
                         villageSelect.innerHTML = '<option value="">Gagal memuat data</option>';
+                        // Biarkan dropdown aktif agar pengguna bisa mencoba lagi jika perlu
+                        villageSelect.disabled = false;
                     });
             }
 
+            // Tambahkan event listener untuk memanggil fetchVillages saat kecamatan diganti
             districtSelect.addEventListener('change', function() {
                 fetchVillages(this.value);
             });
-        }
 
-        districtSelect.addEventListener('change', function() {
-            fetchVillages(this.value);
-        });
+            // PERBAIKAN UTAMA: Logika untuk menangani data lama (saat validasi gagal)
+            const oldDistrict = "{{ request('district') }}";
+            if (oldDistrict) {
+                fetchVillages(oldDistrict);
 
-        if (districtSelect.value) {
-            fetchVillages(districtSelect.value);
-            setTimeout(() => {
-                const oldVillage = "{{ request('village') }}";
-                if (oldVillage) {
-                    villageSelect.value = oldVillage;
-                }
-            }, 500);
-        }
+                // Beri sedikit jeda agar daftar desa sempat terisi sebelum memilih nilai lama
+                setTimeout(() => {
+                    const oldVillage = "{{ request('village') }}";
+                    if (oldVillage) {
+                        villageSelect.value = oldVillage;
+                    }
+                }, 500); // jeda 500 milidetik
+            }
         });
     </script>
 

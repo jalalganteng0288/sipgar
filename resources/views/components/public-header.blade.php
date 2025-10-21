@@ -7,10 +7,11 @@
 
         <div class="border-l border-white h-16 mx-6"></div>
 
-        <div class="text-center">
+        <div class="text-center" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);">
             <h1 class="text-3xl font-bold tracking-wider">SIPGAR</h1>
             <p class="text-lg">Sistem Informasi Perumahan Kabupaten Garut</p>
             <p class="text-sm">Dinas Perumahan dan Permukiman</p>
         </div>
+
     </div>
 </header>
