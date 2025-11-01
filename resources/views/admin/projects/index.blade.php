@@ -17,6 +17,41 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            {{-- =================================================== --}}
+            {{-- BLOK PENCARIAN BARU --}}
+            {{-- =================================================== --}}
+            <div class="mb-6 bg-white p-4 rounded-lg shadow">
+                <form action="{{ route('admin.projects.index') }}" method="GET" class="flex flex-col sm:flex-row items-center sm:space-x-4">
+                    <div class="flex-grow w-full mb-2 sm:mb-0">
+                        <label for="search" class="sr-only">Cari</label>
+                        <input type="text" name="search" id="search"
+                               class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                               placeholder="Cari nama perumahan atau nama developer..."
+                               value="{{ $search ?? '' }}"> {{-- Menampilkan kembali kata kunci pencarian --}}
+                    </div>
+                    
+                    <div class="flex w-full sm:w-auto">
+                        <x-primary-button type="submit" class="w-full sm:w-auto justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                            Cari
+                        </x-primary-button>
+    
+                        {{-- Tampilkan tombol Reset hanya jika ada pencarian aktif --}}
+                        @if($search)
+                            <a href="{{ route('admin.projects.index') }}" class="ml-3 inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Reset
+                            </a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+            {{-- =================================================== --}}
+            {{-- AKHIR BLOK PENCARIAN BARU --}}
+            {{-- =================================================== --}}
+
             
             {{-- PERBAIKAN: Mengubah layout menjadi Grid --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -90,15 +125,29 @@
                         </div>
                     </div>
                 @empty
+                    {{-- =================================================== --}}
+                    {{-- PENYESUAIAN PESAN JIKA DATA KOSONG --}}
+                    {{-- =================================================== --}}
                     <div class="col-span-full bg-white text-center p-12 rounded-lg shadow-md">
-                        <p class="text-xl text-gray-500">Belum ada data proyek perumahan.</p>
-                        <p class="text-sm text-gray-400 mt-2">Gunakan tombol "Tambah Proyek Baru" di halaman Dashboard untuk memulai.</p>
+                        @if($search)
+                            <p class="text-xl text-gray-500">Tidak ada proyek perumahan yang cocok dengan pencarian <span class="font-semibold">"{{ $search }}"</span>.</p>
+                            <a href="{{ route('admin.projects.index') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                                Reset Pencarian
+                            </a>
+                        @else
+                            <p class="text-xl text-gray-500">Belum ada data proyek perumahan.</p>
+                            <p class="text-sm text-gray-400 mt-2">Gunakan tombol "Tambah Proyek Baru" di halaman Dashboard untuk memulai.</p>
+                        @endif
                     </div>
+                    {{-- =================================================== --}}
+                    {{-- AKHIR PENYESUAIAN PESAN --}}
+                    {{-- =================================================== --}}
                 @endforelse
             </div>
             
             {{-- Paginasi --}}
             <div class="mt-8">
+                {{-- Link paginasi akan otomatis menyertakan query pencarian --}}
                 {{ $projects->links() }}
             </div>
         </div>

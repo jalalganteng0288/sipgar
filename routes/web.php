@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\HouseTypeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\DependentDropdownController;
 use App\Http\Controllers\Public\ChartController;
+use App\Http\Controllers\Admin\GisController;
 
 // Rute Halaman Publik
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -34,6 +35,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/admin/gis-dashboard', [GisController::class, 'index'])
+        ->name('admin.gis.index');
 });
 
 

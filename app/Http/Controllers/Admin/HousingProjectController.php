@@ -4,18 +4,47 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // <-- TAMBAHKAN 'use Illuminate\Http\Request;'
 use Illuminate\Support\Facades\Storage;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
 
 class HousingProjectController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
+    public function index(Request $request) // <-- TAMBAHKAN Request $request
     {
-        // Perbaikan pagination
-        $projects = HousingProject::latest()->paginate(10);
-        return view('admin.projects.index', ['projects' => $projects]);
+        // Ambil kata kunci pencarian dari request
+        $search = $request->input('search');
+
+        // Mulai query builder
+        $query = HousingProject::query();
+
+        // Jika ada kata kunci pencarian, filter query
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('developer_name', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Ambil data dengan pagination dan urutkan dari yang terbaru
+        $projects = $query->latest()->paginate(10);
+
+        // Tambahkan parameter pencarian ke link pagination
+        // Ini penting agar saat pindah halaman, pencarian tetap aktif
+        $projects->appends(['search' => $search]);
+
+        // Kirim data ke view, termasuk kata kunci pencarian
+        return view('admin.projects.index', [
+            'projects' => $projects,
+            'search' => $search, // <-- Kirim variabel search ke view
+        ]);
     }
 
     public function create()
