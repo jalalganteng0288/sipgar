@@ -17,8 +17,8 @@ class GisController extends Controller
         // 1. Ambil data proyek yang punya koordinat.
         // Cukup gunakan ->get(), JANGAN tambahkan ->select().
         $projects = HousingProject::whereNotNull('latitude')
-                                  ->whereNotNull('longitude')
-                                  ->get();
+            ->whereNotNull('longitude')
+            ->get();
 
         // 2. Ubah data (Collection) menjadi format GeoJSON (Array)
         // Ini semua diproses oleh PHP, BUKAN oleh SQL.
@@ -33,7 +33,7 @@ class GisController extends Controller
                     'name' => $project->name,
                     'status' => $project->status,
                     // Kita gunakan nama rute 'project.show' (singular)
-                    'url' => route('project.show', $project->id)
+                    'url' => route('projects.show', $project->id)
                 ]
             ];
         });

@@ -16,7 +16,7 @@
                 </div>
             </div>
 
-            {{-- Kartu Statistik Modern (Tidak ada perubahan) --}}
+            {{-- Kartu Statistik Modern --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                 {{-- Card 1: Total Proyek --}}
                 <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white overflow-hidden shadow-lg rounded-xl p-6 flex flex-col justify-between transform transition-all duration-300 hover:scale-105">
@@ -63,7 +63,52 @@
                 </div>
             </div>
 
-            {{-- PERBAIKAN: Tombol Aksi Cepat disederhanakan --}}
+            {{-- === BLOK PETA GIS BARU === --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+                <div class="p-6 text-gray-900">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Peta Persebaran Proyek</h3>
+                    
+                    {{-- 1. Load Library Leaflet --}}
+                    {{-- (Penting: Pastikan ini ada di dalam 'x-app-layout' atau di sini) --}}
+                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                    
+                    {{-- 2. Siapkan Kanvas Peta --}}
+                    <div id="map" style="height: 500px; width: 100%;" class="mt-4 rounded-lg z-0"></div>
+
+                    {{-- 3. Inisialisasi Peta (Script) --}}
+                    <script>
+                        // Tentukan titik tengah (pusat Garut)
+                        var map = L.map('map').setView([-7.216639, 107.908611], 12);
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+
+                        // Ambil data dari controller
+                        var geoJsonData = @json($geoJsonData);
+
+                        // Tampilkan marker di peta
+                        if (geoJsonData && geoJsonData.length > 0) {
+                            L.geoJSON(geoJsonData, {
+                                onEachFeature: function (feature, layer) {
+                                    var popupContent = `
+                                        <b>${feature.properties.name}</b><br>
+                                        Status: ${feature.properties.status}<br>
+                                        <a href="${feature.properties.url}" target="_blank">Lihat Detail</a>
+                                    `;
+                                    layer.bindPopup(popupContent);
+                                }
+                            }).addTo(map);
+                        } else {
+                            console.log("Tidak ada data GeoJSON untuk ditampilkan.");
+                        }
+                    </script>
+                </div>
+            </div>
+            {{-- === AKHIR BLOK PETA GIS === --}}
+
+            {{-- Tombol Aksi Cepat --}}
             <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
                 <h3 class="text-lg font-semibold text-gray-700 mb-4">Aksi Cepat</h3>
                 <div class="flex flex-wrap gap-4">
@@ -73,7 +118,6 @@
                         </svg>
                         Tambah Proyek Baru
                     </a>
-                    {{-- Tombol "Lihat Semua Proyek" dan "Lihat Situs Publik" dihapus dari sini --}}
                 </div>
             </div>
             

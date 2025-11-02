@@ -15,9 +15,9 @@
                     <x-nav-link :href="route('home')" :active="false" target="_blank">
                         {{ __('Lihat Situs') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('admin.gis.index')" :active="request()->routeIs('admin.gis.index')">
+                    {{-- <x-nav-link :href="route('admin.gis.index')" :active="request()->routeIs('admin.gis.index')">
                         {{ __('Peta Persebaran') }}
-                    </x-nav-link>
+                    </x-nav-link> --}}
                 </div>
             </div>
 
