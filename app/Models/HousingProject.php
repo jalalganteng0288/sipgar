@@ -45,4 +45,8 @@ class HousingProject extends Model
     {
         return $this->hasMany(ProjectImage::class);
     }
+    public function houseUnits() // <-- BARU
+    {
+        return $this->hasMany(HouseUnit::class);
+    }
 }

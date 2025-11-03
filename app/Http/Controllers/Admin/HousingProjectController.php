@@ -4,28 +4,54 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
-use Illuminate\Http\Request; // <-- TAMBAHKAN 'use Illuminate\Http\Request;'
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Developer;
 
 class HousingProjectController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
+     * Menerapkan Policy secara otomatis setelah user terotentikasi.
+     * Ini MENGHINDARI error 'Call to a member function hasRole() on null'.
      */
-    public function index(Request $request) // <-- TAMBAHKAN Request $request
+    public function __construct()
     {
-        // Ambil kata kunci pencarian dari request
-        $search = $request->input('search');
+        // Panggil authorizeResource hanya setelah user terotentikasi.
+        // Ini memastikan Auth::user() sudah tersedia sebelum Policy diinisialisasi.
+        $this->middleware(function ($request, $next) {
+            $this->authorizeResource(HousingProject::class, 'project');
+            return $next($request);
+        });
+    }
 
-        // Mulai query builder
+    /**
+     * Display a listing of the resource.
+     * Memfilter daftar proyek berdasarkan role pengguna.
+     */
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
         $query = HousingProject::query();
 
-        // Jika ada kata kunci pencarian, filter query
+        // LOGIKA FILTER BERDASARKAN ROLE
+        if (Auth::user()->hasRole('developer')) {
+            // Ambil relasi developer
+            $developer = Auth::user()->developer; 
+            
+            // PERBAIKAN: Cek apakah relasi developer ada (mengatasi error null property access)
+            if ($developer) {
+                // Developer hanya melihat proyek yang developer_id-nya miliknya
+                $query->where('developer_id', $developer->id);
+            } else {
+                // Jika data Developer belum ada, tampilkan hasil kosong.
+                $query->where('id', 0); 
+            }
+        }
+        
+        // Logika pencarian lama dipertahankan
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
@@ -33,29 +59,25 @@ class HousingProjectController extends Controller
             });
         }
 
-        // Ambil data dengan pagination dan urutkan dari yang terbaru
         $projects = $query->latest()->paginate(10);
-
-        // Tambahkan parameter pencarian ke link pagination
-        // Ini penting agar saat pindah halaman, pencarian tetap aktif
         $projects->appends(['search' => $search]);
 
-        // Kirim data ke view, termasuk kata kunci pencarian
         return view('admin.projects.index', [
             'projects' => $projects,
-            'search' => $search, // <-- Kirim variabel search ke view
+            'search' => $search,
         ]);
     }
-
+    
     public function create()
     {
-        // Perbaikan dropdown create
+        // Otorisasi sudah di handle oleh __construct()
         $districts = District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
         return view('admin.projects.create', compact('districts'));
     }
 
     public function store(Request $request)
     {
+        // Otorisasi sudah di handle oleh __construct()
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
@@ -72,6 +94,20 @@ class HousingProjectController extends Controller
 
         $data = $validated;
 
+        // LOGIKA PENGISIAN developer_id (Dipertahankan dan diperbaiki)
+        if (Auth::user()->hasRole('developer')) {
+            $developer = Auth::user()->developer;
+            
+            // PERBAIKAN: Cek apakah relasi developer ada
+            if ($developer) {
+                $data['developer_id'] = $developer->id;
+                $data['developer_name'] = $developer->company_name; 
+            } else {
+                // Jika developer tidak punya data perusahaan, tolak aksi
+                return redirect()->back()->withErrors(['developer_data' => 'Data perusahaan Pengembang Anda belum lengkap. Harap lengkapi profil perusahaan sebelum membuat proyek.'])->withInput();
+            }
+        }
+
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('project-images', 'public');
         }
@@ -86,13 +122,14 @@ class HousingProjectController extends Controller
 
     public function show(HousingProject $project)
     {
+        // Otorisasi sudah di handle oleh __construct()
         $project->load('houseTypes');
         return view('admin.projects.show', ['project' => $project]);
     }
 
     public function edit(HousingProject $project)
     {
-        // Perbaikan dropdown edit
+        // Otorisasi sudah di handle oleh __construct()
         $districts = District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
         $villages = Village::where('district_code', $project->district_code)->pluck('name', 'code');
 
@@ -108,10 +145,7 @@ class HousingProjectController extends Controller
      */
     public function update(Request $request, HousingProject $project)
     {
-        // ===============================================================
-        // KODE PERBAIKAN UTAMA ADA DI SINI
-        // ===============================================================
-
+        // Otorisasi sudah di handle oleh __construct()
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'developer_name' => 'required|string|max:255',
@@ -125,28 +159,30 @@ class HousingProjectController extends Controller
             'district_code' => 'required|exists:districts,code',
             'village_code' => 'required|exists:villages,code',
         ]);
+        
+        // Jika developer yang mengupdate, timpa developer_name dengan nama perusahaan yang benar
+        if (Auth::user()->hasRole('developer')) {
+            $developer = Auth::user()->developer;
+            if ($developer) {
+                $validatedData['developer_name'] = $developer->company_name;
+            }
+        }
 
-        // Proses upload gambar utama JIKA ADA file baru
+        // Proses upload file (Logika lama dipertahankan)
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
             if ($project->image) {
                 Storage::disk('public')->delete($project->image);
             }
-            // Simpan path gambar baru ke dalam array data
             $validatedData['image'] = $request->file('image')->store('project-images', 'public');
         }
 
-        // Proses upload siteplan JIKA ADA file baru
         if ($request->hasFile('site_plan')) {
-            // Hapus siteplan lama jika ada
             if ($project->site_plan) {
                 Storage::disk('public')->delete($project->site_plan);
             }
-            // Simpan path siteplan baru ke dalam array data
             $validatedData['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
         }
 
-        // Gunakan method update() dari model dengan data yang sudah divalidasi
         $project->update($validatedData);
 
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
@@ -155,6 +191,7 @@ class HousingProjectController extends Controller
 
     public function destroy(HousingProject $project)
     {
+        // Otorisasi sudah di handle oleh __construct()
         if ($project->image) {
             Storage::disk('public')->delete($project->image);
         }

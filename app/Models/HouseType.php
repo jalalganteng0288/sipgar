@@ -34,4 +34,8 @@ class HouseType extends Model
     {
         return $this->belongsTo(HousingProject::class);
     }
+    public function houseUnits() // <-- BARU
+    {
+        return $this->hasMany(HouseUnit::class);
+    }
 }
