@@ -49,4 +49,9 @@ class HousingProject extends Model
     {
         return $this->hasMany(HouseUnit::class);
     }
+    public function developer()
+    {
+        // Relasi "belongsTo" karena "developer_id" ada di tabel ini
+        return $this->belongsTo(Developer::class);
+    }
 }

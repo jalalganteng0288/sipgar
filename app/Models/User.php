@@ -47,4 +47,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function developer()
+    {
+        // Gunakan hasOne jika 1 user HANYA punya 1 data developer
+        return $this->hasOne(Developer::class);
+        
+        // Gunakan belongsTo jika field 'user_id' ada di tabel developers
+        // return $this->belongsTo(Developer::class); 
+        // Pilih salah satu yang sesuai struktur database kamu
+    }
 }

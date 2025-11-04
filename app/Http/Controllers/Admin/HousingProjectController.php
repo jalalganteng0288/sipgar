@@ -39,23 +39,23 @@ class HousingProjectController extends Controller
         // LOGIKA FILTER BERDASARKAN ROLE
         if (Auth::user()->hasRole('developer')) {
             // Ambil relasi developer
-            $developer = Auth::user()->developer; 
-            
+            $developer = Auth::user()->developer;
+
             // PERBAIKAN: Cek apakah relasi developer ada (mengatasi error null property access)
             if ($developer) {
                 // Developer hanya melihat proyek yang developer_id-nya miliknya
                 $query->where('developer_id', $developer->id);
             } else {
                 // Jika data Developer belum ada, tampilkan hasil kosong.
-                $query->where('id', 0); 
+                $query->where('id', 0);
             }
         }
-        
+
         // Logika pencarian lama dipertahankan
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('developer_name', 'like', '%' . $search . '%');
+                    ->orWhere('developer_name', 'like', '%' . $search . '%');
             });
         }
 
@@ -67,12 +67,13 @@ class HousingProjectController extends Controller
             'search' => $search,
         ]);
     }
-    
+
     public function create()
     {
-        // Otorisasi sudah di handle oleh __construct()
-        $districts = District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
-        return view('admin.projects.create', compact('districts'));
+        $developers = Developer::all();
+
+        // Kirim data developers ke view
+        return view('admin.projects.create', compact('developers'));
     }
 
     public function store(Request $request)
@@ -90,6 +91,7 @@ class HousingProjectController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'site_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'developer_id' => 'required|exists:developers,id',
         ]);
 
         $data = $validated;
@@ -97,11 +99,11 @@ class HousingProjectController extends Controller
         // LOGIKA PENGISIAN developer_id (Dipertahankan dan diperbaiki)
         if (Auth::user()->hasRole('developer')) {
             $developer = Auth::user()->developer;
-            
+
             // PERBAIKAN: Cek apakah relasi developer ada
             if ($developer) {
                 $data['developer_id'] = $developer->id;
-                $data['developer_name'] = $developer->company_name; 
+                $data['developer_name'] = $developer->company_name;
             } else {
                 // Jika developer tidak punya data perusahaan, tolak aksi
                 return redirect()->back()->withErrors(['developer_data' => 'Data perusahaan Pengembang Anda belum lengkap. Harap lengkapi profil perusahaan sebelum membuat proyek.'])->withInput();
@@ -132,11 +134,12 @@ class HousingProjectController extends Controller
         // Otorisasi sudah di handle oleh __construct()
         $districts = District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
         $villages = Village::where('district_code', $project->district_code)->pluck('name', 'code');
-
+        $developers = Developer::all();
         return view('admin.projects.edit', [
             'project' => $project,
             'districts' => $districts,
             'villages' => $villages,
+            'developers' => $developers,
         ]);
     }
 
@@ -158,8 +161,9 @@ class HousingProjectController extends Controller
             'longitude' => 'nullable|numeric',
             'district_code' => 'required|exists:districts,code',
             'village_code' => 'required|exists:villages,code',
+            'developer_id' => 'required|exists:developers,id',
         ]);
-        
+
         // Jika developer yang mengupdate, timpa developer_name dengan nama perusahaan yang benar
         if (Auth::user()->hasRole('developer')) {
             $developer = Auth::user()->developer;
