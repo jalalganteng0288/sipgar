@@ -9,9 +9,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\DependentDropdownController;
 use App\Http\Controllers\Public\ChartController;
 use App\Http\Controllers\Admin\GisController;
-
-// Pastikan Anda telah membuat controller ini di langkah sebelumnya (php artisan make:controller Admin/HouseUnitController)
-use App\Http\Controllers\Admin\HouseUnitController; // <-- BARU: Controller untuk Unit Rumah/Kavling
+use App\Http\Controllers\Admin\DeveloperController;
+use App\Http\Controllers\Admin\HouseUnitController;
 
 // ===============================================================
 // RUTE HALAMAN PUBLIK (Tidak perlu otorisasi)
@@ -20,36 +19,34 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/projects/{project}', [HomeController::class, 'show'])->name('projects.show');
 Route::get('/grafik-perumahan', [ChartController::class, 'index'])->name('charts.index.public');
 Route::get('/get-all-projects', [HomeController::class, 'getAllProjectsForMap'])->name('projects.all.for.map');
-
-// Rute untuk dropdown dinamis (misalnya: Desa bergantung pada Kecamatan)
 Route::get('/get-villages/{district_code}', [DependentDropdownController::class, 'villages'])->name('dependent-dropdown.villages');
 
 
 // ===============================================================
-// RUTE AREA ADMIN (MEMBUTUHKAN LOGIN & ROLE)
+// RUTE AREA ADMIN (MEMBUTUHKAN LOGIN)
 // ===============================================================
-Route::middleware(['auth', 'verified', 'role:disperkim_admin|developer'])->prefix('admin')->name('admin.')->group(function () {
-    
-    // Rute dashboard yang mengarah ke daftar proyek
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Manajemen Proyek Perumahan (CRUD)
-    Route::resource('projects', HousingProjectController::class);
+// Grup utama untuk SEMUA user yang sudah login ('admin' DAN 'developer')
+// Kita tambahkan .name('admin.') di sini untuk prefix nama rute
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Manajemen Tipe Rumah (Shallow Resource: projects/{project}/house-types)
+    // Rute yang bisa diakses 'admin' DAN 'developer'
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); // Nama rute: admin.dashboard
+    Route::resource('projects', HousingProjectController::class); // Nama rute: admin.projects.index, admin.projects.create, dll.
     Route::resource('projects.house-types', HouseTypeController::class)->shallow();
+    Route::resource('projects.house-units', HouseUnitController::class)->shallow();
+    Route::get('/gis-dashboard', [GisController::class, 'index'])->name('gis.index'); // Nama rute: admin.gis.index
 
-    // Manajemen Unit/Kavling Rumah (Shallow Resource: projects/{project}/house-units)
-    // Unit ini yang akan dilacak status stoknya (Tersedia/Terjual) seperti SiKumbang
-    Route::resource('projects.house-units', HouseUnitController::class)->shallow(); // <-- BARU
-
-    // GIS Dashboard (Peta)
-    Route::get('/gis-dashboard', [GisController::class, 'index'])->name('gis.dashboard');
-
-    // Rute untuk Profil Pengguna
+    // Rute Profil (semua user login)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Rute yang HANYA bisa diakses 'admin'
+    Route::middleware(['role:admin'])->group(function () {
+        Route::resource('developers', DeveloperController::class); // Nama rute: admin.developers.index, dll.
+    });
+
 });
 
 

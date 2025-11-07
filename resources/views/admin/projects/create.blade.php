@@ -63,24 +63,28 @@
                             <x-input-error class="mt-2" :messages="$errors->get('address')" />
                         </div>
                         <div>
+                            <!-- Kecamatan -->
                             <x-input-label for="district_code" :value="__('Kecamatan')" />
-                            <select id="district_code" name="district_code"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="">Pilih Kecamatan</option>
-                                @foreach ($districts as $code => $name)
-                                    <option value="{{ $code }}"
-                                        {{ old('district_code') == $code ? 'selected' : '' }}>{{ $name }}
-                                    </option>
-                                @endforeach
+                            <select id="district_code" name="district_code" class="mt-1 block w-full">
+                                <option value="">{{ __('Pilih Kecamatan') }}</option>
+                                @forelse ($districts ?? [] as $code => $name)
+                                    <option value="{{ $code }}">{{ $name }}</option>
+                                @empty
+                                    <option value="">{{ __('Tidak ada data kecamatan') }}</option>
+                                @endforelse
                             </select>
-                        </div>
-                        <div>
+
+                            <!-- Desa / Kelurahan -->
                             <x-input-label for="village_code" :value="__('Desa/Kelurahan')" />
-                            <select id="village_code" name="village_code"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                disabled>
-                                <option value="">Pilih Kecamatan Dahulu</option>
+                            <select id="village_code" name="village_code" class="mt-1 block w-full">
+                                <option value="">{{ __('Pilih Kecamatan Dahulu') }}</option>
+                                @forelse ($villages ?? [] as $code => $name)
+                                    <option value="{{ $code }}">{{ $name }}</option>
+                                @empty
+                                    {{-- kosong awalnya --}}
+                                @endforelse
                             </select>
+
                         </div>
                         <div>
                             <x-input-label for="description" :value="__('Deskripsi Singkat')" />
@@ -94,9 +98,12 @@
                         <select id="developer_id" name="developer_id"
                             class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="">Pilih Developer</option>
-                            @foreach ($developers as $developer)
-                                <option value="{{ $developer->id }}">{{ $developer->name }}</option>
-                            @endforeach
+                            @forelse ($districts ?? [] as $code => $name)
+                                <option value="{{ $code }}">{{ $name }}</option>
+                            @empty
+                                <option value="">Tidak ada data kecamatan</option>
+                            @endforelse
+
                         </select>
                         <x-input-error :messages="$errors->get('developer_id')" class="mt-2" />
                     </div>
