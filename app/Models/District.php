@@ -9,9 +9,9 @@ class District extends Model
 {
     use HasFactory;
 
-    protected $table = 'districts';
-    protected $primaryKey = 'code';
-    public $incrementing = false;
+    protected $table = 'districts'; // pastikan tabel sesuai di database
+    protected $primaryKey = 'code'; // kalau kolom primary key kamu 'code'
+    public $incrementing = false; // karena 'code' bukan auto increment
     protected $keyType = 'string';
 
     protected $fillable = [

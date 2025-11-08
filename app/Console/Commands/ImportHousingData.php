@@ -32,6 +32,8 @@ class ImportHousingData extends Command
     {
         $this->info('Starting data import...');
 
+        set_time_limit(0); // <-- TAMBAHKAN BARIS INI
+
         // Path ke file CSV Anda
         $filePath = database_path('data/perumahan.csv');
 

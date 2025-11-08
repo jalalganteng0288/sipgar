@@ -19,7 +19,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/projects/{project}', [HomeController::class, 'show'])->name('projects.show');
 Route::get('/grafik-perumahan', [ChartController::class, 'index'])->name('charts.index.public');
 Route::get('/get-all-projects', [HomeController::class, 'getAllProjectsForMap'])->name('projects.all.for.map');
-Route::get('/get-villages/{district_code}', [DependentDropdownController::class, 'villages'])->name('dependent-dropdown.villages');
+Route::get('/get-villages/{districtCode}', [ProjectController::class, 'getVillages']);
 
 
 // ===============================================================

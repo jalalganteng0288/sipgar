@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Laravolt\Indonesia\Models\District;
-use Laravolt\Indonesia\Models\Village;
+use App\Models\District;
+use App\Models\Village;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Developer;
 
