@@ -18,7 +18,19 @@
 
     <div class="py-10">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-10">
-            <form action="{{ route('admin.projects.store') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
+            @if ($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+                    role="alert">
+                    <strong class="font-bold">Gagal menyimpan!</strong>
+                    <ul class="list-disc pl-5 mt-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <form action="{{ route('admin.projects.store') }}" method="POST" enctype="multipart/form-data"
+                class="space-y-10">
                 @csrf
 
                 {{-- INFORMASI UTAMA --}}
@@ -36,8 +48,9 @@
 
                         <div>
                             <x-input-label for="developer_name" :value="__('Nama Developer')" />
-                            <x-text-input id="developer_name" name="developer_name" type="text" class="mt-1 block w-full"
-                                placeholder="Contoh: PT Maju Jaya Property" :value="old('developer_name')" required />
+                            <x-text-input id="developer_name" name="developer_name" type="text"
+                                class="mt-1 block w-full" placeholder="Contoh: PT Maju Jaya Property" :value="old('developer_name')"
+                                required />
                         </div>
 
                         <div>
@@ -45,8 +58,10 @@
                             <select id="type" name="type"
                                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Pilih Tipe</option>
-                                <option value="Komersil" {{ old('type') == 'Komersil' ? 'selected' : '' }}>Komersil</option>
-                                <option value="Subsidi" {{ old('type') == 'Subsidi' ? 'selected' : '' }}>Subsidi</option>
+                                <option value="Komersil" {{ old('type') == 'Komersil' ? 'selected' : '' }}>Komersil
+                                </option>
+                                <option value="Subsidi" {{ old('type') == 'Subsidi' ? 'selected' : '' }}>Subsidi
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -72,7 +87,8 @@
                                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Pilih Kecamatan</option>
                                 @foreach ($districts ?? [] as $code => $name)
-                                    <option value="{{ $code }}" {{ old('district_code') == $code ? 'selected' : '' }}>
+                                    <option value="{{ $code }}"
+                                        {{ old('district_code') == $code ? 'selected' : '' }}>
                                         {{ $name }}</option>
                                 @endforeach
                             </select>
@@ -99,13 +115,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <x-input-label for="latitude" :value="__('Latitude')" />
-                                <x-text-input id="latitude" name="latitude" type="text" class="mt-1 block w-full bg-gray-50"
-                                    :value="old('latitude', '-7.2278')" readonly />
+                                <x-text-input id="latitude" name="latitude" type="text"
+                                    class="mt-1 block w-full bg-gray-50" :value="old('latitude', '-7.2278')" readonly />
                             </div>
                             <div>
                                 <x-input-label for="longitude" :value="__('Longitude')" />
-                                <x-text-input id="longitude" name="longitude" type="text" class="mt-1 block w-full bg-gray-50"
-                                    :value="old('longitude', '107.9087')" readonly />
+                                <x-text-input id="longitude" name="longitude" type="text"
+                                    class="mt-1 block w-full bg-gray-50" :value="old('longitude', '107.9087')" readonly />
                             </div>
                         </div>
                     </div>
@@ -129,7 +145,8 @@
                             <x-input-label for="site_plan" :value="__('Gambar Site Plan')" />
                             <input id="site_plan" name="site_plan" type="file" class="mt-1 block w-full"
                                 onchange="previewImage(event, 'site_plan-preview')">
-                            <img id="site_plan-preview" class="mt-4 rounded-md shadow-sm hidden max-h-48 object-cover">
+                            <img id="site_plan-preview"
+                                class="mt-4 rounded-md shadow-sm hidden max-h-48 object-cover">
                         </div>
                     </div>
                 </div>

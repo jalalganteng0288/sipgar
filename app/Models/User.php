@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
-    
+
 
     /**
      * The attributes that are mass assignable.
@@ -50,11 +50,6 @@ class User extends Authenticatable
 
     public function developer()
     {
-        // Gunakan hasOne jika 1 user HANYA punya 1 data developer
-        return $this->hasOne(Developer::class);
-        
-        // Gunakan belongsTo jika field 'user_id' ada di tabel developers
-        // return $this->belongsTo(Developer::class); 
-        // Pilih salah satu yang sesuai struktur database kamu
+        return $this->belongsTo(Developer::class);
     }
 }

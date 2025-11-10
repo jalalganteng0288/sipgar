@@ -19,7 +19,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/projects/{project}', [HomeController::class, 'show'])->name('projects.show');
 Route::get('/grafik-perumahan', [ChartController::class, 'index'])->name('charts.index.public');
 Route::get('/get-all-projects', [HomeController::class, 'getAllProjectsForMap'])->name('projects.all.for.map');
-Route::get('/get-villages/{districtCode}', [ProjectController::class, 'getVillages']);
+
+// --- PERBAIKAN: Arahkan ke Controller yang benar ---
+Route::get('/get-villages/{districtCode}', [HousingProjectController::class, 'getVillages'])->name('get.villages');
+// --------------------------------------------------
 
 
 // ===============================================================

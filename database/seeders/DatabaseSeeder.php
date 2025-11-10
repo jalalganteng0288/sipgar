@@ -3,8 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+// --- TAMBAHKAN INI ---
+use Laravolt\Indonesia\Seeds\DatabaseSeeder as IndonesiaDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,11 +14,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Panggil seeder yang sudah kita perbaiki
+        $this->call([
+            // --- TAMBAHKAN INI ---
+            // Baris ini akan mengisi tabel provinces, cities, districts, dan villages
+            IndonesiaDatabaseSeeder::class,
+            
+            // Ini seeder Anda yang sudah ada
+            RolesAndUsersSeeder::class,
         ]);
     }
 }

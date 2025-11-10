@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Models\District;
-use App\Models\Village;
+// --- PERBAIKAN: Gunakan model dari Laravolt ---
+use Laravolt\Indonesia\Models\District;
+use Laravolt\Indonesia\Models\Village;
+// ------------------------------------------
 use Illuminate\Support\Facades\Auth;
 use App\Models\Developer;
 
@@ -39,7 +41,11 @@ class HousingProjectController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+
+        // --- PERBAIKAN: Ini adalah baris 47 ---
+        // Pastikan hanya ada satu ::query()
         $query = HousingProject::query();
+        // -------------------------------------
 
         // LOGIKA FILTER BERDASARKAN ROLE
         if (Auth::user()->hasRole('developer')) {
@@ -64,7 +70,13 @@ class HousingProjectController extends Controller
             });
         }
 
-        $projects = $query->latest()->paginate(10);
+        // --- PERBAIKAN: Load relasi untuk statistik di view ---
+        $projects = $query->with('houseTypes')
+                          ->withCount('houseTypes')
+                          ->latest()
+                          ->paginate(10);
+        // -----------------------------------------------------
+
         $projects->appends(['search' => $search]);
 
         return view('admin.projects.index', [
@@ -78,8 +90,10 @@ class HousingProjectController extends Controller
         // Ambil semua developer (untuk dropdown Developer)
         $developers = \App\Models\Developer::all();
 
-        // Ambil semua kecamatan (tanpa filter kota) — lebih aman untuk testing
-        $districts = \Laravolt\Indonesia\Models\District::pluck('name', 'code');
+        // --- PERBAIKAN: Gunakan model Laravolt dan filter Garut ---
+        $districts = \Laravolt\Indonesia\Models\District::where('city_code', env('APP_CITY_CODE', '3205'))
+            ->pluck('name', 'code');
+        // -----------------------------------------------------
 
         // Kirim villages kosong karena belum memilih kecamatan
         $villages = collect();
@@ -158,8 +172,12 @@ class HousingProjectController extends Controller
     public function edit(HousingProject $project)
     {
         // Otorisasi sudah di handle oleh __construct()
-        $districts = District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
-        $villages = Village::where('district_code', $project->district_code)->pluck('name', 'code');
+
+        // --- PERBAIKAN: Gunakan model Laravolt ---
+        $districts = \Laravolt\Indonesia\Models\District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
+        $villages = \Laravolt\Indonesia\Models\Village::where('district_code', $project->district_code)->pluck('name', 'code');
+        // ----------------------------------------
+        
         $developers = Developer::all();
 
         return view('admin.projects.edit', [
@@ -243,6 +261,7 @@ class HousingProjectController extends Controller
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil dihapus.');
     }
+    
     public function getVillages($districtCode)
     {
         $villages = \Laravolt\Indonesia\Models\Village::where('district_code', $districtCode)
