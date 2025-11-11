@@ -50,10 +50,8 @@ class DeveloperController extends Controller
         $validated = $request->validate([
             'company_name' => 'required|string|max:255',
             'address' => 'nullable|string',
-            'phone_number' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string|max:20', // Anda bisa tambahkan NIB di sini jika perlu
             
-            // INI PERBAIKANNYA:
-            // 'unique' memastikan 1 user hanya bisa punya 1 data developer
             'user_id' => [
                 'required',
                 'exists:users,id',
@@ -81,8 +79,6 @@ class DeveloperController extends Controller
      */
     public function edit(Developer $developer)
     {
-        // Ambil semua user 'developer', KECUALI yang sudah terhubung ke developer lain
-        // dan TAMBAHKAN user yang saat ini terhubung dengan developer ini
         $currentUserId = $developer->user_id;
 
         $users = User::role('developer')
@@ -105,8 +101,6 @@ class DeveloperController extends Controller
             'address' => 'nullable|string',
             'phone_number' => 'nullable|string|max:20',
             
-            // INI PERBAIKANNYA:
-            // 'unique' tapi mengabaikan ID developer ini sendiri
             'user_id' => [
                 'required',
                 'exists:users,id',
@@ -124,7 +118,7 @@ class DeveloperController extends Controller
      */
     public function destroy(Developer $developer)
     {
-        // Tambahkan proteksi jika developer masih punya proyek
+        // Proteksi jika developer masih punya proyek
         if ($developer->housingProjects()->count() > 0) {
             return redirect()->back()->withErrors(['error' => 'Developer tidak bisa dihapus karena masih memiliki data proyek.']);
         }

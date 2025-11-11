@@ -21,8 +21,9 @@
             @if ($errors->any())
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
                     role="alert">
-                    <strong class="font-bold">Gagal menyimpan!</strong>
-                    <ul class="list-disc pl-5 mt-2">
+                    <strong class="font-bold">Gagal Menyimpan!</strong>
+                    <span class="block sm:inline">Terdapat kesalahan input:</span>
+                    <ul class="mt-2 list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach

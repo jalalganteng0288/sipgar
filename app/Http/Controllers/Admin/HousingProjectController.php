@@ -41,49 +41,39 @@ class HousingProjectController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $user = Auth::user();
 
-        // --- PERBAIKAN: Ini adalah baris 47 ---
-        // Pastikan hanya ada satu ::query()
-        $query = HousingProject::query();
-        // -------------------------------------
+        // Query dasar, load relasi developer dan tipe rumah
+        $query = HousingProject::with(['developer', 'houseTypes']);
 
-        // LOGIKA FILTER BERDASARKAN ROLE
-        if (Auth::user()->hasRole('developer')) {
-            // Ambil relasi developer
-            $developer = Auth::user()->developer;
-
-            // PERBAIKAN: Cek apakah relasi developer ada (mengatasi error null property access)
-            if ($developer) {
-                // Developer hanya melihat proyek yang developer_id-nya miliknya
-                $query->where('developer_id', $developer->id);
+        // === LOGIKA FILTER PROYEK BERDASARKAN PERAN PENGGUNA ===
+        if ($user->hasRole('developer')) {
+            // Pastikan relasi user->developer tersedia
+            if ($user->developer) {
+                $query->where('developer_id', $user->developer->id);
             } else {
-                // Jika data Developer belum ada, tampilkan hasil kosong.
-                $query->where('id', 0);
+                // Jika user belum punya data developer, jangan tampilkan proyek apa pun
+                $query->whereRaw('1 = 0');
             }
         }
+        // Admin akan melihat semua proyek secara default
 
-        // Logika pencarian lama dipertahankan
-        if ($search) {
+        // === LOGIKA PENCARIAN ===
+        if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('developer_name', 'like', '%' . $search . '%');
+                $q->where('project_name', 'like', '%' . $search . '%')
+                    ->orWhereHas('developer', function ($q2) use ($search) {
+                        $q2->where('company_name', 'like', '%' . $search . '%');
+                    });
             });
         }
 
-        // --- PERBAIKAN: Load relasi untuk statistik di view ---
-        $projects = $query->with('houseTypes')
-                          ->withCount('houseTypes')
-                          ->latest()
-                          ->paginate(10);
-        // -----------------------------------------------------
+        // === PAGINASI DAN URUTAN ===
+        $projects = $query->latest()->paginate(10);
 
-        $projects->appends(['search' => $search]);
-
-        return view('admin.projects.index', [
-            'projects' => $projects,
-            'search' => $search,
-        ]);
+        return view('admin.projects.index', compact('projects', 'search'));
     }
+
 
     public function create()
     {
@@ -177,7 +167,7 @@ class HousingProjectController extends Controller
         $districts = \Laravolt\Indonesia\Models\District::where('city_code', env('APP_CITY_CODE', '3205'))->pluck('name', 'code');
         $villages = \Laravolt\Indonesia\Models\Village::where('district_code', $project->district_code)->pluck('name', 'code');
         // ----------------------------------------
-        
+
         $developers = Developer::all();
 
         return view('admin.projects.edit', [
@@ -261,7 +251,7 @@ class HousingProjectController extends Controller
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil dihapus.');
     }
-    
+
     public function getVillages($districtCode)
     {
         $villages = \Laravolt\Indonesia\Models\Village::where('district_code', $districtCode)

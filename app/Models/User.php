@@ -48,8 +48,13 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * --- INI PERBAIKANNYA ---
+     * Mendefinisikan relasi "hasOne" ke Developer.
+     * Foreign key 'user_id' ada di tabel developers.
+     */
     public function developer()
     {
-        return $this->belongsTo(Developer::class);
+        return $this->hasOne(Developer::class);
     }
 }

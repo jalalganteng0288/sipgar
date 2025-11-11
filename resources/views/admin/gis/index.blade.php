@@ -17,6 +17,13 @@
                     <div id="map" style="height: 600px; width: 100%;"></div>
 
                     <script>
+                        delete L.Icon.Default.prototype._getIconUrl;
+
+                        L.Icon.Default.mergeOptions({
+                            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                            iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        });
                         // Tentukan titik tengah (pusat Garut)
                         var map = L.map('map').setView([-7.216639, 107.908611], 12);
 
@@ -27,7 +34,7 @@
                         var geoJsonData = @json($geoJsonData);
 
                         L.geoJSON(geoJsonData, {
-                            onEachFeature: function (feature, layer) {
+                            onEachFeature: function(feature, layer) {
                                 var popupContent = `
                                     <b>${feature.properties.name}</b><br>
                                     Status: ${feature.properties.status}<br>
