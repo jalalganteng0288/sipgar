@@ -47,13 +47,32 @@
                                 placeholder="Contoh: Griya Harmoni" :value="old('name')" required />
                         </div>
 
-                        <div>
-                            <x-input-label for="developer_name" :value="__('Nama Developer')" />
-                            <x-text-input id="developer_name" name="developer_name" type="text"
-                                class="mt-1 block w-full" placeholder="Contoh: PT Maju Jaya Property" :value="old('developer_name')"
-                                required />
-                        </div>
-
+                        @if (auth()->user()->hasRole('admin'))
+                            <div>
+                                <x-input-label for="developer_id" :value="__('Pilih Developer')" />
+                                <select id="developer_id" name="developer_id"
+                                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    required>
+                                    <option value="">Pilih Perusahaan Developer</option>
+                                    @foreach ($developers as $dev)
+                                        <option value="{{ $dev->id }}"
+                                            {{ old('developer_id') == $dev->id ? 'selected' : '' }}>
+                                            {{ $dev->company_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('developer_id')" class="mt-2" />
+                            </div>
+                        @else
+                            <div>
+                                <x-input-label :value="__('Nama Developer')" />
+                                <x-text-input class="block mt-1 w-full bg-gray-100" type="text" :value="auth()->user()->developer->company_name ?? 'PROFIL ANDA BELUM LENGKAP'"
+                                    readonly disabled />
+                                @if (!auth()->user()->developer)
+                                    <x-input-error :messages="['Data perusahaan Anda belum terhubung. Proyek tidak bisa dibuat.']" class="mt-2" />
+                                @endif
+                            </div>
+                        @endif
                         <div>
                             <x-input-label for="type" :value="__('Tipe Proyek')" />
                             <select id="type" name="type"
@@ -111,8 +130,7 @@
 
                     <div class="mt-8">
                         <label class="block font-medium text-sm text-gray-700 mb-2">Pilih Lokasi di Peta</label>
-                        <div id="map" class="rounded-md border h-64"></div>
-
+                        <div id="map" class="rounded-md border h-64 z-0"></div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <x-input-label for="latitude" :value="__('Latitude')" />
@@ -180,6 +198,7 @@
             }
 
             document.addEventListener('DOMContentLoaded', () => {
+                // Skrip Dropdown Desa (KODE ASLI ANDA - SUDAH BENAR)
                 const districtSelect = document.getElementById('district_code');
                 const villageSelect = document.getElementById('village_code');
                 const oldVillage = "{{ old('village_code') }}";
@@ -206,19 +225,52 @@
                 districtSelect.addEventListener('change', () => fetchVillages(districtSelect.value));
                 if (districtSelect.value) fetchVillages(districtSelect.value, oldVillage);
 
-                // Leaflet Map
+                // ==================================================================
+                // === SCRIPT PETA LEAFLET YANG SUDAH DIMODIFIKASI (Mulai) ===
+                // ==================================================================
                 const latInput = document.getElementById('latitude');
                 const lonInput = document.getElementById('longitude');
+
+                // 1. Inisialisasi Peta
                 const map = L.map('map').setView([latInput.value, lonInput.value], 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+                // 2. Buat marker awal
                 let marker = L.marker([latInput.value, lonInput.value]).addTo(map);
 
+                // 3. BUAT FUNGSI BARU (untuk update marker & input)
+                // Ini akan dipakai oleh 'map.on(click)' DAN 'geocoder.on(markgeocode)'
+                function updateMarkerAndInputs(lat, lng) {
+                    latInput.value = lat;
+                    lonInput.value = lng;
+
+                    if (marker) {
+                        map.removeLayer(marker); // Hapus marker lama
+                    }
+                    marker = L.marker([lat, lng]).addTo(map); // Tambah marker baru
+                    map.setView([lat, lng], 15); // Zoom ke lokasi baru
+                }
+
+                // 4. MODIFIKASI EVENT CLICK (sekarang memanggil fungsi baru)
                 map.on('click', e => {
-                    latInput.value = e.latlng.lat;
-                    lonInput.value = e.latlng.lng;
-                    if (marker) map.removeLayer(marker);
-                    marker = L.marker(e.latlng).addTo(map);
+                    updateMarkerAndInputs(e.latlng.lat, e.latlng.lng);
                 });
+
+                // 5. TAMBAHAN BARU: GEOCORGER (PENCARIAN)
+                L.Control.geocoder({
+                    defaultMarkGeocode: false, // Kita handle marker-nya sendiri
+                    placeholder: 'Cari lokasi (contoh: Tarogong Kidul)...' // Teks placeholder
+                }).on('markgeocode', function(e) {
+                    // Dipanggil saat hasil pencarian dipilih
+                    const {
+                        lat,
+                        lng
+                    } = e.geocode.center;
+                    updateMarkerAndInputs(lat, lng);
+                }).addTo(map);
+                // ==================================================================
+                // === SCRIPT PETA LEAFLET (Selesai) ===
+                // ==================================================================
             });
         </script>
     @endpush

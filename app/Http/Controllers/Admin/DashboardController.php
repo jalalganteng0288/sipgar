@@ -6,51 +6,49 @@ use App\Http\Controllers\Controller;
 use App\Models\HouseType;
 use App\Models\HousingProject; // Pastikan ini sudah ada
 use Illuminate\Http\Request;
+// Jika Anda menggunakan Model Developer untuk hal lain, import di sini:
+// use App\Models\Developer; 
 
 class DashboardController extends Controller
 {
-    /**
-     * Menampilkan halaman dashboard admin dengan data statistik.
-     */
     public function index()
     {
-        // Ambil data statistik (Kode Asli)
+        // 1. Ambil data statistik (Tidak ada perubahan signifikan di sini)
         $totalProjects = HousingProject::count();
         $totalDevelopers = HousingProject::distinct('developer_name')->count();
         $totalUnits = HouseType::sum('total_units');
         $totalUnitsSold = HouseType::where('status', 'Terjual')->sum('total_units');
 
-        // --- TAMBAHAN: Logika dari GisController ---
-        // 1. Ambil data proyek yang punya koordinat.
+        // 2. Logika Peta GIS (PERBAIKAN KRITIS DI SINI)
         $projects = HousingProject::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get();
 
-        // 2. Ubah data menjadi format GeoJSON
+        // 🚨 PERBAIKAN: WAJIB ditambahkan ->toArray() di akhir
         $geoJsonData = $projects->map(function ($project) {
             return [
                 'type' => 'Feature',
                 'geometry' => [
                     'type' => 'Point',
-                    'coordinates' => [(float)$project->longitude, (float)$project->latitude]
+                    // Pastikan urutan [longitude, latitude] untuk GeoJSON
+                    'coordinates' => [(float)$project->longitude, (float)$project->latitude] 
                 ],
                 'properties' => [
                     'name' => $project->name,
                     'status' => $project->status,
-                    // Pastikan kamu punya route 'projects.show'
+                    // Memanggil rute yang sudah kita perbaiki di routes/web.php
                     'url' => route('projects.show', $project->id) 
                 ]
             ];
-        });
-        // --- AKHIR TAMBAHAN ---
+        })->toArray(); // <-- SOLUSI KRITIS: Mengubah Collection menjadi Array
 
-        // Kirim data ke view (tambahkan $geoJsonData)
+        // 3. Kirim data ke view
         return view('dashboard', compact(
             'totalProjects',
             'totalDevelopers',
             'totalUnits',
             'totalUnitsSold',
-            'geoJsonData' // <-- Tambahkan variabel ini
+            'geoJsonData'
         ));
     }
 }

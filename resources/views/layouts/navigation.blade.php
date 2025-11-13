@@ -21,9 +21,9 @@
                             {{ __('Manajemen Developer') }}
                         </x-nav-link>
                     @endrole
-                    {{-- <x-nav-link :href="route('admin.gis.index')" :active="request()->routeIs('admin.gis.index')">
+                    <x-nav-link :href="route('admin.gis.index')" :active="request()->routeIs('admin.gis.index')">
                         {{ __('Peta Persebaran') }}
-                    </x-nav-link> --}}
+                    </x-nav-link>
                 </div>
             </div>
 

@@ -43,36 +43,34 @@ class HousingProjectController extends Controller
         $search = $request->input('search');
         $user = Auth::user();
 
-        // Query dasar, load relasi developer dan tipe rumah
-        $query = HousingProject::with(['developer', 'houseTypes']);
+        $query = HousingProject::with(['developer', 'houseTypes', 'district'])
+            ->withCount('houseTypes'); // Hitung jumlah tipe rumah
 
-        // === LOGIKA FILTER PROYEK BERDASARKAN PERAN PENGGUNA ===
+        // === FILTER ROLE ===
         if ($user->hasRole('developer')) {
-            // Pastikan relasi user->developer tersedia
             if ($user->developer) {
                 $query->where('developer_id', $user->developer->id);
             } else {
-                // Jika user belum punya data developer, jangan tampilkan proyek apa pun
                 $query->whereRaw('1 = 0');
             }
         }
-        // Admin akan melihat semua proyek secara default
 
-        // === LOGIKA PENCARIAN ===
+        // === FILTER PENCARIAN ===
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('project_name', 'like', '%' . $search . '%')
+                $q->where('name', 'like', '%' . $search . '%') // <-- disesuaikan dengan kolom di DB
                     ->orWhereHas('developer', function ($q2) use ($search) {
                         $q2->where('company_name', 'like', '%' . $search . '%');
                     });
             });
         }
 
-        // === PAGINASI DAN URUTAN ===
+        // === PAGINASI ===
         $projects = $query->latest()->paginate(10);
 
         return view('admin.projects.index', compact('projects', 'search'));
     }
+
 
 
     public function create()
@@ -95,12 +93,11 @@ class HousingProjectController extends Controller
 
     public function store(Request $request)
     {
-        // Otorisasi sudah di handle oleh __construct()
+        $user = Auth::user();
 
-        // Buat aturan validasi dasar
+        // 1. Aturan validasi dasar
         $rules = [
             'name' => 'required|string|max:255',
-            'developer_name' => 'required|string|max:255',
             'type' => 'required|string|in:Komersil,Subsidi',
             'address' => 'required|string',
             'district_code' => 'required|exists:districts,code',
@@ -112,34 +109,37 @@ class HousingProjectController extends Controller
             'site_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
 
-        // Jika bukan developer, developer_id wajib diisi (admin mengisi pilihan developer di form)
-        if (!Auth::user()->hasRole('developer')) {
+        // 2. Sesuaikan aturan validasi berdasarkan role
+        if ($user->hasRole('admin')) {
+            // Admin WAJIB memilih developer_id dari dropdown
             $rules['developer_id'] = 'required|exists:developers,id';
-        } else {
-            // Jika user role developer, kita akan set developer_id dari relasi user, jadi tidak wajib
-            $rules['developer_id'] = 'nullable|exists:developers,id';
         }
 
+        // 3. Validasi request
         $validated = $request->validate($rules);
+        $data = $validated; // Data awal adalah data yang tervalidasi
 
-        $data = $validated;
+        // 4. Logika khusus untuk role
+        if ($user->hasRole('admin')) {
+            // Jika Admin, ambil developer_name dari developer_id yang dipilih
+            $developer = Developer::find($validated['developer_id']);
+            $data['developer_name'] = $developer->company_name;
+            // $data['developer_id'] sudah ada dari $validated
+        } elseif ($user->hasRole('developer')) {
+            $developer = $user->developer; // Ambil relasi developer dari user
 
-        // LOGIKA PENGISIAN developer_id (Dipertahankan dan diperbaiki)
-        if (Auth::user()->hasRole('developer')) {
-            $developer = Auth::user()->developer;
-
-            // PERBAIKAN: Cek apakah relasi developer ada
-            if ($developer) {
-                $data['developer_id'] = $developer->id;
-                $data['developer_name'] = $developer->company_name;
-            } else {
-                // Jika developer tidak punya data perusahaan, tolak aksi
+            if (!$developer) {
                 return redirect()->back()
-                    ->withErrors(['developer_data' => 'Data perusahaan Pengembang Anda belum lengkap. Harap lengkapi profil perusahaan sebelum membuat proyek.'])
+                    ->withErrors(['developer_data' => 'Data perusahaan Anda belum lengkap. Harap lengkapi profil perusahaan sebelum membuat proyek.'])
                     ->withInput();
             }
+
+            // Timpa/isi data developer_id dan developer_name
+            $data['developer_id'] = $developer->id;
+            $data['developer_name'] = $developer->company_name; // Ambil nama resmi
         }
 
+        // 5. Proses upload file
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('project-images', 'public');
         }
@@ -147,6 +147,7 @@ class HousingProjectController extends Controller
             $data['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
         }
 
+        // 6. Buat proyek
         HousingProject::create($data);
 
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil ditambahkan.');
@@ -183,10 +184,11 @@ class HousingProjectController extends Controller
      */
     public function update(Request $request, HousingProject $project)
     {
-        // Otorisasi sudah di handle oleh __construct__
+        $user = Auth::user();
+
+        // 1. Aturan validasi dasar
         $rules = [
             'name' => 'required|string|max:255',
-            'developer_name' => 'required|string|max:255',
             'type' => 'required|string|in:Komersil,Subsidi',
             'address' => 'required|string',
             'description' => 'nullable|string',
@@ -198,26 +200,29 @@ class HousingProjectController extends Controller
             'village_code' => 'required|exists:villages,code',
         ];
 
-        // developer_id diperlukan hanya bila yang mengupdate bukan developer (admin bisa ubah developer proyek)
-        if (!Auth::user()->hasRole('developer')) {
+        // 2. Sesuaikan aturan validasi
+        if ($user->hasRole('admin')) {
             $rules['developer_id'] = 'required|exists:developers,id';
-        } else {
-            $rules['developer_id'] = 'nullable|exists:developers,id';
         }
 
+        // 3. Validasi
         $validatedData = $request->validate($rules);
 
-        // Jika developer yang mengupdate, timpa developer_name dengan nama perusahaan yang benar
-        if (Auth::user()->hasRole('developer')) {
-            $developer = Auth::user()->developer;
+        // 4. Logika khusus untuk role
+        if ($user->hasRole('admin')) {
+            // Jika Admin, ambil developer_name dari developer_id yang dipilih
+            $developer = Developer::find($validatedData['developer_id']);
+            $validatedData['developer_name'] = $developer->company_name;
+        } elseif ($user->hasRole('developer')) {
+            $developer = $user->developer;
             if ($developer) {
-                $validatedData['developer_name'] = $developer->company_name;
-                // pastikan developer_id konsisten
+                // Paksa ID dan Nama agar sesuai dengan profil login
                 $validatedData['developer_id'] = $developer->id;
+                $validatedData['developer_name'] = $developer->company_name;
             }
         }
 
-        // Proses upload file (Logika lama dipertahankan)
+        // 5. Proses upload file (Hapus file lama jika ada)
         if ($request->hasFile('image')) {
             if ($project->image) {
                 Storage::disk('public')->delete($project->image);
@@ -232,6 +237,7 @@ class HousingProjectController extends Controller
             $validatedData['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
         }
 
+        // 6. Update proyek
         $project->update($validatedData);
 
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
