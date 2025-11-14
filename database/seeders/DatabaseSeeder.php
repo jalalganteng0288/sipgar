@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+// --- TAMBAHKAN INI ---
+use Laravolt\Indonesia\Seeds\DatabaseSeeder as IndonesiaDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,18 +14,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Panggil seeder Laravolt Indonesia
+        // Panggil seeder yang sudah kita perbaiki
         $this->call([
-            \Laravolt\Indonesia\Seeds\ProvincesSeeder::class,
-            \Laravolt\Indonesia\Seeds\CitiesSeeder::class,
-            \Laravolt\Indonesia\Seeds\DistrictsSeeder::class,
-            \Laravolt\Indonesia\Seeds\VillagesSeeder::class,
+            // --- TAMBAHKAN INI ---
+            // Baris ini akan mengisi tabel provinces, cities, districts, dan villages
+            IndonesiaDatabaseSeeder::class,
+            
+            // Ini seeder Anda yang sudah ada
+            RolesAndUsersSeeder::class,
         ]);
-
-        // ===============================================
-        // PASTIKAN BARIS DI BAWAH INI ADA
-        // DAN TIDAK ADA TANDA KOMENTAR (//) DI DEPANNYA
-        // ===============================================
-        $this->call(RolesAndUsersSeeder::class);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne; // <-- PASTIKAN ADA INI
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -53,8 +54,9 @@ class User extends Authenticatable
      * Mendefinisikan relasi "hasOne" ke Developer.
      * Foreign key 'user_id' ada di tabel developers.
      */
-    public function developer()
+    public function developer(): HasOne
     {
-        return $this->hasOne(Developer::class);
+        // INI KODE YANG BENAR
+        return $this->hasOne(Developer::class, 'user_id');
     }
 }

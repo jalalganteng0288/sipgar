@@ -12,6 +12,8 @@ use Laravolt\Indonesia\Models\Village;
 // ------------------------------------------
 use Illuminate\Support\Facades\Auth;
 use App\Models\Developer;
+use App\Models\User;
+
 
 class HousingProjectController extends Controller
 {
@@ -258,12 +260,27 @@ class HousingProjectController extends Controller
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil dihapus.');
     }
 
+    // GANTI DENGAN FUNGSI BARU INI
+    // GANTI DENGAN FUNGSI BARU INI (TANPA 'fn')
+    public function getDevelopers()
+    {
+        // Ambil semua user yang punya role 'developer'
+        // Kita gunakan 'whereHas' dengan sintaks function() lama
+        $developers = User::whereHas('roles', function ($q) {
+            $q->where('name', 'developer');
+        })
+            ->with('developer') // 'developer' adalah nama relasi di User.php
+            ->get();
+
+        return response()->json($developers);
+    }
     public function getVillages($districtCode)
     {
+        // Gunakan model Laravolt\Indonesia\Models\Village yang sudah di-import di atas
+        // Kita pluck name keyed by code supaya frontend bisa langsung iterasi { code: name }
         $villages = \Laravolt\Indonesia\Models\Village::where('district_code', $districtCode)
             ->pluck('name', 'code');
 
-        // kembalikan JSON { code => name }
         return response()->json($villages);
     }
 }

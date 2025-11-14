@@ -11,7 +11,8 @@ use App\Http\Controllers\Public\ChartController;
 use App\Http\Controllers\Admin\GisController;
 use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\HouseUnitController;
-use App\Http\Controllers\AdminHomeController; // 🆕 Tambahan controller baru
+use App\Http\Controllers\AdminHomeController;
+use App\Http\Controllers\DeveloperProfileController; // 🆕 Tambahan controller baru
 
 // ===============================================================
 // RUTE HALAMAN PUBLIK (Tidak perlu otorisasi)
@@ -52,7 +53,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+    Route::patch('/profile/developer', [DeveloperProfileController::class, 'update'])
+        ->name('profile.developer.update');
     // Rute yang HANYA bisa diakses 'admin'
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('developers', DeveloperController::class); // Nama rute: admin.developers.index, dll.
