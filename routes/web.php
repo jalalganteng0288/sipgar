@@ -57,7 +57,12 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         ->name('profile.developer.update');
     // Rute yang HANYA bisa diakses 'admin'
     Route::middleware(['role:admin'])->group(function () {
-        Route::resource('developers', DeveloperController::class); // Nama rute: admin.developers.index, dll.
+        // DIKEMBALIKAN: Resource normal (mengizinkan edit dan update)
+        Route::resource('developers', DeveloperController::class); // <--- KEMBALI SEPERTI INI
+        
+        // Rute Toggle Role (Tetap ada)
+        Route::patch('developers/{developer}/toggle-role', [DeveloperController::class, 'toggleRole'])
+            ->name('developers.toggleRole');
     });
 });
 

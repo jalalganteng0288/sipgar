@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Edit Data Developer') }}
+            {{ __('Edit Developer: ') . $developer->company_name }}
         </h2>
     </x-slot>
 
@@ -9,78 +9,82 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    {{-- ACTION menggunakan PATCH untuk update data --}}
                     <form action="{{ route('admin.developers.update', $developer) }}" method="POST">
                         @csrf
-                        @method('PUT')
+                        @method('PATCH')
+                        
+                        <!-- ============================================== -->
+                        <!-- BAGIAN 1: DATA AKUN USER (LOGIN) -->
+                        <!-- ============================================== -->
+                        <h3 class="text-lg font-bold mb-4 border-b pb-2">{{ __('1. Edit Data Akun Login') }}</h3>
 
-                        {{-- Data Form --}}
+                        {{-- NAMA USER --}}
                         <div class="mb-4">
-                            <x-input-label for="user_id" :value="__('Akun User (Pemilik)')" />
-                            <div class="relative">
-                                <select id="user_id" name="user_id" required
-                                    class="block appearance-none w-full bg-white border border-gray-300 px-3 py-2 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">{{ __('Pilih Akun User') }}</option>
-                                    @forelse($users as $user)
-                                        <option value="{{ $user->id }}"
-                                            {{ old('user_id', $developer->user_id) == $user->id ? 'selected' : '' }}>
-                                            {{ $user->name }} ({{ $user->email }})
-                                        </option>
-                                    @empty
-                                        <option value="">
-                                            {{ __('-- Tidak ada akun user dengan role developer --') }}</option>
-                                    @endforelse
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                        aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
+                            <x-input-label for="name" :value="__('Nama Lengkap User')" />
+                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" 
+                                :value="old('name', $developer->user->name)" required autofocus />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                        </div>
+                        
+                        {{-- EMAIL USER --}}
+                        <div class="mb-4">
+                            <x-input-label for="email" :value="__('Email (Untuk Login)')" />
+                            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" 
+                                :value="old('email', $developer->user->email)" required />
+                            <p class="mt-1 text-sm text-gray-500">{{ __('Perubahan email akan memengaruhi akses login Developer.') }}</p>
+                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
                         </div>
 
+                        {{-- PASSWORD BARU --}}
+                        <div class="mb-4">
+                            <x-input-label for="password" :value="__('Password Baru (Kosongkan jika tidak diubah)')" />
+                            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" />
+                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                        </div>
+                        
+                        <hr class="my-8 border-gray-300">
+
+                        <!-- ============================================== -->
+                        <!-- BAGIAN 2: DATA PERUSAHAAN DEVELOPER -->
+                        <!-- ============================================== -->
+                        <h3 class="text-lg font-bold mb-4 border-b pb-2">{{ __('2. Edit Data Perusahaan Developer') }}</h3>
+
+                        {{-- NAMA PERUSAHAAN --}}
                         <div class="mb-4">
                             <x-input-label for="company_name" :value="__('Nama Perusahaan')" />
-                            <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name"
+                            <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name" 
                                 :value="old('company_name', $developer->company_name)" required />
                             <x-input-error :messages="$errors->get('company_name')" class="mt-2" />
                         </div>
 
+                        {{-- KONTAK PERSON --}}
                         <div class="mb-4">
-                            <x-input-label for="phone" :value="__('Nomor Telepon')" />
-                            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone"
-                                :value="old('phone', $developer->phone)" />
+                            <x-input-label for="contact_person" :value="__('Nama Kontak Person')" />
+                            <x-text-input id="contact_person" class="block mt-1 w-full" type="text" name="contact_person" 
+                                :value="old('contact_person', $developer->contact_person)" placeholder="Diisi jika berbeda dengan Nama Lengkap User" />
+                            <x-input-error :messages="$errors->get('contact_person')" class="mt-2" />
+                        </div>
+
+                        {{-- NOMOR TELEPON --}}
+                        <div class="mb-4">
+                            <x-input-label for="phone" :value="__('Nomor Telepon Perusahaan')" />
+                            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" 
+                                :value="old('phone', $developer->phone)" required />
                             <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                         </div>
 
+                        {{-- ALAMAT --}}
                         <div class="mb-4">
                             <x-input-label for="address" :value="__('Alamat Perusahaan')" />
-                            <textarea id="address" name="address" rows="3"
-                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('address', $developer->address) }}</textarea>
+                            <textarea id="address" name="address" rows="3" 
+                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('address', $developer->address) }}</textarea>
                             <x-input-error :messages="$errors->get('address')" class="mt-2" />
                         </div>
 
-                        {{-- ====================================================== --}}
-                        {{-- TAMBAHAN: Input Peta, Latitude, dan Longitude --}}
-                        {{-- ====================================================== --}}
-                        <div class="mb-4">
-                            <x-input-label for="map" :value="__('Lokasi Peta')" />
-                            <div id="map" style="height: 400px; width: 100%;" class="mt-1 rounded-md shadow-sm">
-                            </div>
-                        </div>
-
-                        {{-- Input tersembunyi untuk menyimpan nilai lat/lng --}}
-                        <input type="hidden" id="latitude" name="latitude"
-                            value="{{ old('latitude', $developer->latitude ?? '-6.9175') }}">
-                        <input type="hidden" id="longitude" name="longitude"
-                            value="{{ old('longitude', $developer->longitude ?? '107.6191') }}">
-                        {{-- ====================================================== --}}
-
-                        <div class="flex items-center justify-end mt-4">
+                        <div class="flex items-center justify-end mt-6">
                             <x-primary-button>
-                                {{ __('Simpan Perubahan') }}
+                                {{ __('Perbarui Developer') }}
                             </x-primary-button>
                         </div>
                     </form>
@@ -88,61 +92,4 @@
             </div>
         </div>
     </div>
-
-    {{-- ====================================================== --}}
-    {{-- TAMBAHAN: Skrip Khusus Untuk Halaman Ini --}}
-    {{-- ====================================================== --}}
-    @push('scripts')
-        <script>
-            // Pastikan DOM sudah dimuat
-            document.addEventListener('DOMContentLoaded', function() {
-
-                // Ambil nilai awal dari input (beri nilai default jika null)
-                let lat = document.getElementById('latitude').value || -6.9175; // Default Bandung
-                let lng = document.getElementById('longitude').value || 107.6191;
-
-                // Inisialisasi peta
-                let map = L.map('map').setView([lat, lng], 13);
-
-                // Tambahkan tile layer
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
-
-                // Tambahkan marker awal
-                let marker = L.marker([lat, lng], {
-                    draggable: true
-                }).addTo(map);
-
-                // Event saat marker digeser
-                marker.on('dragend', function(e) {
-                    let latlng = marker.getLatLng();
-                    document.getElementById('latitude').value = latlng.lat;
-                    document.getElementById('longitude').value = latlng.lng;
-                });
-
-                // Tambahkan Geocoder (pencarian)
-                L.Control.geocoder({
-                        defaultMarkGeocode: false
-                    })
-                    .on('markgeocode', function(e) {
-                        let latlng = e.geocode.center;
-                        map.setView(latlng, 13);
-                        marker.setLatLng(latlng);
-                        document.getElementById('latitude').value = latlng.lat;
-                        document.getElementById('longitude').value = latlng.lng;
-                    })
-                    .addTo(map);
-
-                // Event saat peta diklik
-                map.on('click', function(e) {
-                    let latlng = e.latlng;
-                    marker.setLatLng(latlng);
-                    document.getElementById('latitude').value = latlng.lat;
-                    document.getElementById('longitude').value = latlng.lng;
-                });
-
-            });
-        </script>
-    @endpush
 </x-app-layout>

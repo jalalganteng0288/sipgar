@@ -22,11 +22,11 @@ class RolesAndUsersSeeder extends Seeder
 
         // Buat role 'admin' jika belum ada
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        
+
         // Buat role 'developer' jika belum ada
         $developerRole = Role::firstOrCreate(['name' => 'developer']);
 
-        
+
         // --- ADMIN BARU ---
         // Buat Admin User (Sesuai permintaan Anda)
         $adminUser = User::firstOrCreate(
@@ -38,7 +38,7 @@ class RolesAndUsersSeeder extends Seeder
         );
         $adminUser->assignRole($adminRole); // Tetapkan role admin
 
-        
+
         // --- DEVELOPER BARU ---
         // Buat Developer User (Sesuai permintaan Anda)
         $developerUser = User::firstOrCreate(
@@ -50,15 +50,23 @@ class RolesAndUsersSeeder extends Seeder
         );
         $developerUser->assignRole($developerRole); // Tetapkan role developer
 
-        
+
         // --- KODE PENTING: Tetap buatkan profil perusahaan untuk developer ---
         Developer::firstOrCreate(
             ['user_id' => $developerUser->id], // Cari berdasarkan user_id
             [
                 'company_name' => 'PT. Developer Default',
-                'nib' => '1234567890', 
+                'nib' => '1234567890',
                 'address' => 'Alamat Default Developer'
             ]
         );
+        $unlinkedDeveloperUser = User::firstOrCreate(
+            ['email' => 'siap.tautkan@sipgar.com'], // <-- Email baru untuk User yang siap ditautkan
+            [
+                'name' => 'Siap Tautkan',
+                'password' => Hash::make('dev123'),
+            ]
+        );
+        $unlinkedDeveloperUser->assignRole($developerRole); // Tetapkan role developer
     }
 }

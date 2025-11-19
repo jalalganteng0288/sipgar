@@ -1,86 +1,132 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">
-            <i class="fas fa-users mr-2 text-blue-600"></i> Manajemen Developer
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Manajemen Developer') }}
         </h2>
     </x-slot>
 
-    <div class="py-8" x-data="{ search: '' }">
+    <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-lg sm:rounded-xl p-6 border border-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold">{{ __('Daftar Semua Developer Terdaftar') }}</h3>
+                        <!-- Tombol Tambah Developer Baru -->
+                        <a href="{{ route('admin.developers.create') }}">
+                            <x-primary-button>
+                                {{ __('Tambah Developer Baru') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+                    
+                    <!-- Menampilkan Pesan Sukses/Error -->
+                    @if (session('success'))
+                        <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if (session('error'))
+                        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                            {{ session('error') }}
+                        </div>
+                    @endif
 
-                {{-- Header Section --}}
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-3 sm:space-y-0">
-                    <a href="{{ route('admin.developers.create') }}"
-                        class="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-all duration-300">
-                        <i class="fas fa-plus"></i> Tambah Developer
-                    </a>
-
-                    <input type="text" x-model="search" placeholder="Cari developer..."
-                        class="w-full sm:w-64 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
-                </div>
-
-                {{-- Table Section --}}
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700 uppercase">Nama</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700 uppercase">Email</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700 uppercase">Aksi</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="divide-y divide-gray-100">
-                            @foreach ($developers as $developer)
-                                <tr x-show="{{ json_encode($developer->name) }}.toLowerCase().includes(search.toLowerCase()) ||
-                                            {{ json_encode($developer->email) }}.toLowerCase().includes(search.toLowerCase())"
-                                    class="hover:bg-blue-50 transition duration-150 ease-in-out">
-
-                                    <td class="px-4 py-3 text-gray-800 font-medium">{{ $developer->name }}</td>
-                                    <td class="px-4 py-3 text-gray-600">{{ $developer->email }}</td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center space-x-3">
-                                            <a href="{{ route('admin.developers.edit', $developer->id) }}"
-                                                class="text-yellow-500 hover:text-yellow-600 font-semibold transition-colors duration-150">
-                                                <i class="fas fa-edit mr-1"></i>Edit
+                    <!-- Tabel Daftar Developer -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Perusahaan / Kontak') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Info Akun') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Status Akses') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Aksi') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($developers as $developer)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <p class="font-semibold">{{ $developer->company_name }}</p> 
+                                            <span class="text-xs text-gray-500">{{ $developer->address }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            @if ($developer->user)
+                                                <p class="font-medium">{{ $developer->user->name }}</p>
+                                                <p class="text-xs">{{ $developer->user->email }}</p>
+                                            @else
+                                                <span class="text-red-500 font-semibold">{{ __('User Tidak Ditemukan') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if ($developer->user && $developer->user->hasRole('developer'))
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Aktif
+                                                </span>
+                                            @else
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    Nonaktif/Suspended
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            
+                                            <!-- Tombol Edit -->
+                                            <a href="{{ route('admin.developers.edit', $developer) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                {{ __('Edit') }}
                                             </a>
+                                            
+                                            <!-- Tombol Aktif/Nonaktif (Suspend Access) -->
+                                            @if($developer->user)
+                                                <form action="{{ route('admin.developers.toggleRole', $developer) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" 
+                                                            onclick="return confirm('{{ $developer->user->hasRole('developer') ? 'Yakin NONAKTIFKAN akses Developer ini? Developer tidak bisa menambah/mengelola proyek.' : 'Yakin AKTIFKAN kembali akses Developer ini?' }}')"
+                                                            class="text-xs font-medium px-2 py-1 rounded 
+                                                                    {{ $developer->user->hasRole('developer') ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white' }}">
+                                                        {{ $developer->user->hasRole('developer') ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                    </button>
+                                                </form>
+                                            @endif
 
-                                            <form action="{{ route('admin.developers.destroy', $developer->id) }}"
-                                                method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                            <!-- Tombol Hapus Total -->
+                                            <form action="{{ route('admin.developers.destroy', $developer) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit"
-                                                    class="text-red-500 hover:text-red-700 font-semibold transition-colors duration-150">
-                                                    <i class="fas fa-trash mr-1"></i>Hapus
+                                                <button type="submit" 
+                                                        onclick="return confirm('PERINGATAN! Anda yakin ingin MENGHAPUS developer, akun user, dan semua tautan ke proyek mereka secara PERMANEN?')"
+                                                        class="text-red-600 hover:text-red-900 ml-3">
+                                                    {{ __('Hapus') }}
                                                 </button>
                                             </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-
-                            @if ($developers->isEmpty())
-                                <tr>
-                                    <td colspan="3" class="text-center py-6 text-gray-500 italic">
-                                        <i class="fas fa-info-circle mr-1"></i> Belum ada data developer
-                                    </td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-
-                {{-- Footer --}}
-                <div class="mt-6 text-sm text-gray-500 flex justify-end">
-                    <span>Total: {{ $developers->count() }} developer</span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                            {{ __('Belum ada data developer yang ditambahkan.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        {{ $developers->links() }}
+                    </div>
+                    
                 </div>
             </div>
         </div>
     </div>
-
-    {{-- Alpine.js untuk reaktivitas --}}
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    {{-- Font Awesome untuk ikon --}}
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </x-app-layout>
