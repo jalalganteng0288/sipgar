@@ -42,7 +42,7 @@ class HomeController extends Controller
             }
         }
 
-        // ==== 3. Kirim data ke view ====
+        
         return view('dashboard', [
             'totalProjects' => $totalProjects,
             'totalDevelopers' => $totalDevelopers,

@@ -78,8 +78,7 @@ class HousingProjectController extends Controller
     public function create()
     {
         // Ambil semua developer (untuk dropdown Developer)
-        $developers = \App\Models\Developer::all();
-
+        $developers = Developer::all(); // <-- 2. AMBIL SEMUA DEVELOPER
         // --- PERBAIKAN: Gunakan model Laravolt dan filter Garut ---
         $districts = \Laravolt\Indonesia\Models\District::where('city_code', env('APP_CITY_CODE', '3205'))
             ->pluck('name', 'code');
@@ -260,12 +259,10 @@ class HousingProjectController extends Controller
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil dihapus.');
     }
 
-    // GANTI DENGAN FUNGSI BARU INI
-    // GANTI DENGAN FUNGSI BARU INI (TANPA 'fn')
+    
     public function getDevelopers()
     {
-        // Ambil semua user yang punya role 'developer'
-        // Kita gunakan 'whereHas' dengan sintaks function() lama
+        
         $developers = User::whereHas('roles', function ($q) {
             $q->where('name', 'developer');
         })

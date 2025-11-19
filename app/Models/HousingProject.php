@@ -17,10 +17,11 @@ class HousingProject extends Model
         'type',
         'image',
         'site_plan',
-        'latitude',       // <-- Tambahkan ini
+        'latitude',      
         'longitude',
-        'district_code', // Pastikan ini ada
+        'district_code', 
         'village_code',
+        'developer_id', // <-- TAMBAHKAN BARIS INI
     ];
 
     public function houseTypes()
