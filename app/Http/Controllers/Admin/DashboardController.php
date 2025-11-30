@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HouseType;
-use App\Models\HousingProject; // Pastikan ini sudah ada
+use App\Models\HousingProject;
+ // Pastikan ini sudah ada
 use Illuminate\Http\Request;
 // Jika Anda menggunakan Model Developer untuk hal lain, import di sini:
 // use App\Models\Developer; 

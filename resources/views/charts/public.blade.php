@@ -16,158 +16,169 @@
 </head>
 
 <body class="antialiased bg-gray-100 font-sans">
-    
 
     <main class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="text-center mb-10">
-                <h1 class="text-3xl font-bold text-gray-800">Grafik Data Perumahan</h1>
-                <p class="mt-2 text-lg text-gray-600">Visualisasi data sebaran dan harga perumahan di Kabupaten Garut.</p>
+
+            {{-- Judul --}}
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Grafik Data Perumahan</h1>
+                <p class="mt-3 text-lg text-gray-600">
+                    Visualisasi data sebaran dan rata-rata harga perumahan di Kabupaten Garut.
+                </p>
             </div>
 
-            {{-- Bagian Filter --}}
-            <div class="bg-white p-4 rounded-lg shadow-md mb-8">
+            {{-- FILTER – UI BARU --}}
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 mb-10">
                 <form action="{{ route('charts.index.public') }}" method="GET">
-                    {{-- PERBAIKAN: Menggunakan flexbox untuk merapikan posisi tombol --}}
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        {{-- Bagian Kiri: Filter --}}
+
+                    <div class="flex flex-wrap items-center justify-between gap-6">
+
                         <div class="flex flex-wrap items-center gap-4">
-                            <label for="type" class="text-sm font-medium text-gray-700">Filter berdasarkan Tipe:</label>
-                            <select name="type" id="type" class="form-select rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="type" class="font-medium text-gray-700 text-sm">
+                                Filter berdasarkan Tipe:
+                            </label>
+
+                            <select id="type" name="type"
+                                class="px-4 py-2 rounded-xl border-gray-300 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Semua Tipe</option>
                                 <option value="Komersil" {{ $currentFilter == 'Komersil' ? 'selected' : '' }}>Komersil</option>
                                 <option value="Subsidi" {{ $currentFilter == 'Subsidi' ? 'selected' : '' }}>Subsidi</option>
                             </select>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow hover:bg-blue-700 transition">
+
+                            <button type="submit"
+                                class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow hover:bg-blue-700 transition">
                                 Terapkan Filter
                             </button>
-                            <a href="{{ route('charts.index.public') }}" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-300 transition">
+
+                            <a href="{{ route('charts.index.public') }}"
+                                class="px-5 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-300 transition">
                                 Reset
                             </a>
                         </div>
 
-                        {{-- Bagian Kanan: Tombol Kembali --}}
-                        <div>
-                            <a href="{{ route('home') }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-md shadow hover:bg-green-700 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                </svg>
-                                Kembali ke Beranda
-                            </a>
-                        </div>
+                        <a href="{{ route('home') }}"
+                            class="inline-flex items-center px-5 py-2 bg-green-600 text-white rounded-xl text-sm font-semibold shadow hover:bg-green-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Kembali ke Beranda
+                        </a>
                     </div>
+
                 </form>
             </div>
 
-            {{-- Grid untuk Grafik --}}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-semibold mb-1">Sebaran Unit Perumahan</h3>
+            {{-- GRID CHART PREMIUM --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+                {{-- CARD CHART UNIT --}}
+                <div class="bg-white shadow-lg rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Sebaran Unit Perumahan</h3>
                         <p class="text-sm text-gray-500 mb-4">Total unit yang tersedia di setiap kecamatan.</p>
-                        <div style="height: 400px;">
+
+                        <div style="height: 420px;">
                             <canvas id="unitsChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-semibold mb-1">Rata-rata Harga Rumah</h3>
+                {{-- CARD CHART HARGA --}}
+                <div class="bg-white shadow-lg rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Rata-rata Harga Rumah</h3>
                         <p class="text-sm text-gray-500 mb-4">Estimasi rata-rata harga rumah di setiap kecamatan.</p>
-                        <div style="height: 400px;">
+
+                        <div style="height: 420px;">
                             <canvas id="pricesChart"></canvas>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
-    
+
     <x-public-footer />
 
-    {{-- PERBAIKAN: Kode JavaScript lengkap untuk grafik dikembalikan --}}
+    {{-- SCRIPT CHART --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             const districtNames = @json($districtNames ?? []);
             const unitsPerDistrict = @json($unitsPerDistrict ?? []);
             const avgPricePerDistrict = @json($avgPricePerDistrict ?? []);
 
-            // Konfigurasi Umum untuk Chart
             const chartOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { color: '#6b7280' },
+                        ticks: { color: '#374151' },
                         grid: { color: '#e5e7eb' }
                     },
                     x: {
-                        ticks: { color: '#6b7280' },
+                        ticks: { color: '#374151', maxRotation: 80, minRotation: 45 },
                         grid: { display: false }
                     }
                 },
                 plugins: {
                     legend: {
-                        labels: { color: '#374151' }
+                        labels: { color: '#111827', font: { size: 13 } }
                     }
                 }
             };
 
-            // Inisialisasi Grafik untuk Unit
-            const unitsCanvas = document.getElementById('unitsChart');
-            if (unitsCanvas) {
-                new Chart(unitsCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: districtNames,
-                        datasets: [{
-                            label: 'Jumlah Unit',
-                            data: unitsPerDistrict,
-                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: chartOptions
-                });
-            }
+            new Chart(document.getElementById('unitsChart'), {
+                type: 'bar',
+                data: {
+                    labels: districtNames,
+                    datasets: [{
+                        label: 'Jumlah Unit',
+                        data: unitsPerDistrict,
+                        backgroundColor: 'rgba(59, 130, 246, 0.45)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1.2,
+                        borderRadius: 6
+                    }]
+                },
+                options: chartOptions
+            });
 
-            // Inisialisasi Grafik untuk Harga
-            const pricesCanvas = document.getElementById('pricesChart');
-            if(pricesCanvas) {
-                new Chart(pricesCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: districtNames,
-                        datasets: [{
-                            label: 'Rata-rata Harga',
-                            data: avgPricePerDistrict,
-                            backgroundColor: 'rgba(16, 185, 129, 0.5)',
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        ...chartOptions,
-                        scales: {
-                            ...chartOptions.scales,
-                            y: {
-                                ...chartOptions.scales.y,
-                                ticks: {
-                                    ...chartOptions.scales.y.ticks,
-                                    callback: function(value) {
-                                        if (value === 0) return 'Rp 0';
-                                        return 'Rp ' + (value / 1000000).toFixed(0) + ' Jt';
-                                    }
-                                }
+            new Chart(document.getElementById('pricesChart'), {
+                type: 'bar',
+                data: {
+                    labels: districtNames,
+                    datasets: [{
+                        label: 'Rata-rata Harga',
+                        data: avgPricePerDistrict,
+                        backgroundColor: 'rgba(16, 185, 129, 0.45)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1.2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            ticks: {
+                                ...chartOptions.scales.y.ticks,
+                                callback: value => value === 0 ? 'Rp 0' : 'Rp ' + (value / 1_000_000).toFixed(0) + ' Jt'
                             }
                         }
                     }
-                });
-            }
+                }
+            });
+
         });
     </script>
+
 </body>
+
 </html>
