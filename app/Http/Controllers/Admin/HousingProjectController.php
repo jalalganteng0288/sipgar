@@ -259,10 +259,10 @@ class HousingProjectController extends Controller
         return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil dihapus.');
     }
 
-    
+
     public function getDevelopers()
     {
-        
+
         $developers = User::whereHas('roles', function ($q) {
             $q->where('name', 'developer');
         })

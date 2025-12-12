@@ -15,6 +15,7 @@ class HousingProject extends Model
         'description',
         'developer_name',
         'type',
+        'status',
         'image',
         'site_plan',
         'latitude',      

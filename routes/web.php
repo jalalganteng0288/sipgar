@@ -45,7 +45,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // --- Rute yang bisa diakses 'admin' DAN 'developer' ---
     // Dashboard kini dikelola di sini.
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); // <--- Dashboard tunggal
-    
+
     Route::resource('projects', HousingProjectController::class);
     Route::resource('projects.house-types', HouseTypeController::class)->shallow();
     Route::resource('projects.house-units', HouseUnitController::class)->shallow();
@@ -57,7 +57,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/developer', [DeveloperProfileController::class, 'update'])
         ->name('profile.developer.update');
-        
+
     // --- Rute yang HANYA bisa diakses 'admin' ---
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('developers', DeveloperController::class);
@@ -67,6 +67,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 
         Route::get('report/export-units', [ReportController::class, 'exportUnitData'])
             ->name('report.exportUnits');
+
+        Route::put('projects/{project}/approve', [HousingProjectController::class, 'approve'])->name('projects.approve');
+        Route::put('projects/{project}/reject', [HousingProjectController::class, 'reject'])->name('projects.reject');
     });
 });
 

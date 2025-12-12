@@ -31,7 +31,6 @@ class GisController extends Controller
                 ],
                 'properties' => [
                     'name' => $project->name,
-                    'status' => $project->status,
                     // Kita gunakan nama rute 'project.show' (singular)
                     'url' => route('projects.show', $project->id)
                 ]
