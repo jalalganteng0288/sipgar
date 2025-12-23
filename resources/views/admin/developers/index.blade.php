@@ -1,30 +1,30 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            {{-- Judul di Kiri --}}
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Manajemen Developer') }}
-            </h2>
-
-            {{-- Tombol di Kanan --}}
-            <a href="{{ route('admin.dashboard') }}"
-                class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Kembali ke Dashboard
-            </a>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Manajemen Developer') }}
+        </h2>
     </x-slot>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- TOMBOL KEMBALI (DIPINDAHKAN KE SINI) --}}
+            <div class="flex justify-end mb-4">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Kembali ke Dashboard
+                </a>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
 
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-semibold">{{ __('Semua Developer Terdaftar') }}</h3>
-                        <!-- Tombol Tambah Developer Baru -->
                         <a href="{{ route('admin.developers.create') }}">
                             <x-primary-button>
                                 {{ __('Tambah Developer Baru') }}
@@ -32,7 +32,6 @@
                         </a>
                     </div>
 
-                    <!-- Menampilkan Pesan Sukses/Error -->
                     @if (session('success'))
                         <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
                             {{ session('success') }}
@@ -44,7 +43,6 @@
                         </div>
                     @endif
 
-                    <!-- Tabel Daftar Developer -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -98,20 +96,18 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 
-                                            <!-- Tombol Edit -->
                                             <a href="{{ route('admin.developers.edit', $developer) }}"
                                                 class="text-indigo-600 hover:text-indigo-900 mr-3">
                                                 {{ __('Edit') }}
                                             </a>
 
-                                            <!-- Tombol Aktif/Nonaktif (Suspend Access) -->
                                             @if ($developer->user)
                                                 <form action="{{ route('admin.developers.toggleRole', $developer) }}"
                                                     method="POST" class="inline">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit"
-                                                        onclick="return confirm('{{ $developer->user->hasRole('developer') ? 'Yakin NONAKTIFKAN akses Developer ini? Developer tidak bisa menambah/mengelola proyek.' : 'Yakin AKTIFKAN kembali akses Developer ini?' }}')"
+                                                        onclick="return confirm('{{ $developer->user->hasRole('developer') ? 'Yakin NONAKTIFKAN akses Developer ini?' : 'Yakin AKTIFKAN kembali akses Developer ini?' }}')"
                                                         class="text-xs font-medium px-2 py-1 rounded 
                                                                     {{ $developer->user->hasRole('developer') ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white' }}">
                                                         {{ $developer->user->hasRole('developer') ? 'Nonaktifkan' : 'Aktifkan' }}
@@ -119,13 +115,12 @@
                                                 </form>
                                             @endif
 
-                                            <!-- Tombol Hapus Total -->
                                             <form action="{{ route('admin.developers.destroy', $developer) }}"
                                                 method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    onclick="return confirm('PERINGATAN! Anda yakin ingin MENGHAPUS developer, akun user, dan semua tautan ke proyek mereka secara PERMANEN?')"
+                                                    onclick="return confirm('PERINGATAN! Anda yakin ingin MENGHAPUS developer secara PERMANEN?')"
                                                     class="text-red-600 hover:text-red-900 ml-3">
                                                     {{ __('Hapus') }}
                                                 </button>

@@ -1,4 +1,13 @@
 <x-app-layout>
+    {{-- ================================================================= --}}
+    {{-- TAMBAHAN: LIBRARY LEAFLET & GEOCODER (WAJIB ADA) --}}
+    {{-- ================================================================= --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-2">
@@ -129,8 +138,10 @@
                     </div>
 
                     <div class="mt-8">
-                        <label class="block font-medium text-sm text-gray-700 mb-2">Pilih Lokasi di Peta</label>
+                        <label class="block font-medium text-sm text-gray-700 mb-2">Pilih Lokasi di Peta (Gunakan Pencarian di Pojok Kanan Atas Peta)</label>
+                        {{-- Container Peta --}}
                         <div id="map" class="rounded-md border h-64 z-0"></div>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <x-input-label for="latitude" :value="__('Latitude')" />
@@ -198,7 +209,7 @@
             }
 
             document.addEventListener('DOMContentLoaded', () => {
-                // Skrip Dropdown Desa (KODE ASLI ANDA - SUDAH BENAR)
+                // Skrip Dropdown Desa
                 const districtSelect = document.getElementById('district_code');
                 const villageSelect = document.getElementById('village_code');
                 const oldVillage = "{{ old('village_code') }}";
@@ -226,51 +237,48 @@
                 if (districtSelect.value) fetchVillages(districtSelect.value, oldVillage);
 
                 // ==================================================================
-                // === SCRIPT PETA LEAFLET YANG SUDAH DIMODIFIKASI (Mulai) ===
+                // === SCRIPT PETA LEAFLET DENGAN FITUR PENCARIAN ===
                 // ==================================================================
                 const latInput = document.getElementById('latitude');
                 const lonInput = document.getElementById('longitude');
 
                 // 1. Inisialisasi Peta
                 const map = L.map('map').setView([latInput.value, lonInput.value], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
 
                 // 2. Buat marker awal
                 let marker = L.marker([latInput.value, lonInput.value]).addTo(map);
 
-                // 3. BUAT FUNGSI BARU (untuk update marker & input)
-                // Ini akan dipakai oleh 'map.on(click)' DAN 'geocoder.on(markgeocode)'
+                // 3. FUNGSI UPDATE MARKER & INPUT
                 function updateMarkerAndInputs(lat, lng) {
                     latInput.value = lat;
                     lonInput.value = lng;
 
                     if (marker) {
-                        map.removeLayer(marker); // Hapus marker lama
+                        map.removeLayer(marker);
                     }
-                    marker = L.marker([lat, lng]).addTo(map); // Tambah marker baru
-                    map.setView([lat, lng], 15); // Zoom ke lokasi baru
+                    marker = L.marker([lat, lng]).addTo(map);
+                    map.setView([lat, lng], 16); // Zoom lebih dekat saat lokasi ditemukan
                 }
 
-                // 4. MODIFIKASI EVENT CLICK (sekarang memanggil fungsi baru)
+                // 4. EVENT CLICK PADA PETA
                 map.on('click', e => {
                     updateMarkerAndInputs(e.latlng.lat, e.latlng.lng);
                 });
 
-                // 5. TAMBAHAN BARU: GEOCORGER (PENCARIAN)
+                // 5. FITUR PENCARIAN (GEOCODER)
                 L.Control.geocoder({
-                    defaultMarkGeocode: false, // Kita handle marker-nya sendiri
-                    placeholder: 'Cari lokasi (contoh: Tarogong Kidul)...' // Teks placeholder
-                }).on('markgeocode', function(e) {
-                    // Dipanggil saat hasil pencarian dipilih
-                    const {
-                        lat,
-                        lng
-                    } = e.geocode.center;
+                    defaultMarkGeocode: false,
+                    placeholder: 'Cari desa, kecamatan... (e.g. Wanaraja)',
+                    errorMessage: 'Lokasi tidak ditemukan.',
+                })
+                .on('markgeocode', function(e) {
+                    const { lat, lng } = e.geocode.center;
                     updateMarkerAndInputs(lat, lng);
-                }).addTo(map);
-                // ==================================================================
-                // === SCRIPT PETA LEAFLET (Selesai) ===
-                // ==================================================================
+                })
+                .addTo(map);
             });
         </script>
     @endpush
