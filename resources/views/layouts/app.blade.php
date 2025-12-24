@@ -35,8 +35,8 @@
             <nav class="flex-1 px-4 space-y-2 mt-6 overflow-y-auto">
                 <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3 mb-2">Main Menu</p>
 
-                <a href="{{ url('/admin/dashboard') }}"
-                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->is('admin/dashboard') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -44,8 +44,8 @@
                     Dashboard
                 </a>
 
-                <a href="{{ url('/admin/projects') }}"
-                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->is('admin/projects*') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
+                <a href="{{ route('admin.projects.index') }}"
+                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->routeIs('admin.projects.*') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -53,27 +53,30 @@
                     Data Perumahan
                 </a>
 
-                <a href="{{ url('/admin/developers') }}"
-                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->is('admin/developers*') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
-                    </svg>
-                    Manajemen Developer
-                </a>
+                @role('admin')
+                    <a href="{{ route('admin.developers.index') }}"
+                        class="flex items-center gap-3 p-3 rounded-xl {{ request()->routeIs('admin.developers.*') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+                        </svg>
+                        Manajemen Developer
+                    </a>
+                @endrole
 
-                <a href="{{ url('/admin/projects') }}"
-                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->is('admin/projects*') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
+                <a href="{{ route('admin.gis.index') }}"
+                    class="flex items-center gap-3 p-3 rounded-xl {{ request()->routeIs('admin.gis.index') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition-all text-sm font-medium">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
                     Peta Persebaran
                 </a>
+
                 <div class="pt-4 mt-4 border-t border-slate-800">
                     <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3 mb-2">Navigasi
                         Luar</p>
-                    <a href="{{ url('/') }}" target="_blank"
+                    <a href="{{ route('home') }}" target="_blank"
                         class="flex items-center gap-3 p-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -96,7 +99,7 @@
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <h2 class="ml-4 font-bold text-slate-800 tracking-tight">SIPGAR Admin</h2>
+                    <h2 class="ml-4 font-bold text-slate-800 tracking-tight">SIPGAR </h2>
                 </div>
 
                 <div class="flex items-center gap-3" x-data="{ open: false }">
@@ -106,9 +109,17 @@
                             <div class="text-right hidden sm:block">
                                 <p
                                     class="text-xs font-bold text-slate-700 group-hover:text-indigo-600 transition-colors uppercase">
-                                    {{ Auth::user()->name }}</p>
+                                    {{ Auth::user()->name }}
+                                </p>
                                 <p class="text-[10px] text-slate-400 leading-none italic font-medium tracking-wide">
-                                    Administrator Aktif</p>
+                                    @role('admin')
+                                        Administrator Aktif
+                                        @elserole('developer')
+                                        Developer Perumahan
+                                    @else
+                                        User Terdaftar
+                                    @endrole
+                                </p>
                             </div>
                             <div
                                 class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white group-hover:border-indigo-100 transition-all">
@@ -122,7 +133,7 @@
                             x-transition:enter-end="transform opacity-100 scale-100"
                             class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 z-50 overflow-hidden">
 
-                            <a href="{{ url('/profile') }}"
+                            <a href="{{ route('admin.profile.edit') }}"
                                 class="block px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors font-medium">
                                 Edit Profil
                             </a>

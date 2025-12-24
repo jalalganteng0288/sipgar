@@ -47,8 +47,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        // HAPUS SEMUA LOGIKA IF 'developer' DARI SINI
-
+        // Pastikan diarahkan ke 'admin.profile.edit' bukan 'profile.edit'
         return Redirect::route('admin.profile.edit')->with('status', 'profile-updated');
     }
 
