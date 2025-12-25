@@ -33,6 +33,14 @@
                 {{ optional($project->district)->name }}
                 <br>
                 <span class="font-semibold">Pengembang:</span> {{ $project->developer_name }}
+                @if ($project->developer && $project->developer->phone)
+                    <br>
+                    <span class="font-semibold">Hubungi:</span>
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $project->developer->phone) }}"
+                        target="_blank" class="text-green-400 hover:text-green-300 font-bold underline">
+                        {{ $project->developer->phone }}
+                    </a>
+                @endif
             </p>
         </div>
     </section>

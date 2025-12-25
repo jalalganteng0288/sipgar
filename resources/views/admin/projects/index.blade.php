@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- TOMBOL KEMBALI (DIPINDAHKAN KE SINI) --}}
+            {{-- TOMBOL KEMBALI --}}
             <div class="flex justify-end mb-4">
                 <a href="{{ route('admin.dashboard') }}"
                     class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -64,6 +64,7 @@
                 @forelse ($projects as $project)
                     <div
                         class="group relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                        
                         {{-- Gambar Latar Belakang --}}
                         <div class="absolute inset-0 z-0">
                             <img src="{{ $project->image ? asset('storage/' . $project->image) : 'https://via.placeholder.com/400x500.png?text=No+Image' }}"
@@ -77,15 +78,14 @@
                         <div class="relative z-10 p-6 flex flex-col h-full text-white">
                             <div class="flex justify-between items-start mb-4">
                                 <span
-                                    class="... {{ $project->type === 'Subsidi' ? 'bg-blue-500/80' : 'bg-green-500/80' }}">
+                                    class="text-xs font-bold px-3 py-1 rounded-full {{ $project->type === 'Subsidi' ? 'bg-blue-500/80' : 'bg-green-500/80' }}">
                                     {{ $project->type }}
                                 </span>
-                                @if ($project->created_at->isAfter(now()->subDays(7)))
-                                    <span
-                                        class="text-xs font-semibold py-1 px-3 rounded-full bg-yellow-500/80 animate-pulse">
-                                        Terbaru
-                                    </span>
-                                @endif
+                                
+                                {{-- Badge Status Verifikasi --}}
+                                <span class="text-xs font-bold px-3 py-1 rounded-full {{ $project->status === 'approved' ? 'bg-green-600' : 'bg-red-500 animate-pulse' }}">
+                                    {{ $project->status === 'approved' ? 'Sesuai RT/RW' : 'Belum Verifikasi' }}
+                                </span>
                             </div>
 
                             <div class="mt-auto">
@@ -118,63 +118,70 @@
                             </div>
                         </div>
 
-                        {{-- Tombol Aksi --}}
+                        {{-- Tombol Aksi (Muncul saat Hover) --}}
                         <div
-                            class="absolute inset-0 z-20 bg-black/50 flex items-center justify-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <a href="{{ route('admin.projects.show', $project) }}"
-                                class="p-3 bg-white/20 rounded-full hover:bg-white/40 transform hover:scale-110 transition-all"
-                                title="Lihat Detail">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </a>
-                            <a href="{{ route('admin.projects.edit', $project) }}"
-                                class="p-3 bg-white/20 rounded-full hover:bg-white/40 transform hover:scale-110 transition-all"
-                                title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </a>
-                            <form action="{{ route('admin.projects.destroy', $project) }}" method="POST"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus proyek ini?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="p-3 bg-white/20 rounded-full hover:bg-red-500/80 transform hover:scale-110 transition-all"
-                                    title="Hapus">
+                            class="absolute inset-0 z-20 bg-black/50 flex flex-col items-center justify-center space-y-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            
+                            {{-- BARU: Tombol Approval Cepat --}}
+                            @if($project->status !== 'approved')
+                                <form action="{{ route('admin.projects.approve', $project->id) }}" method="POST"
+                                    onsubmit="return confirm('Setujui lokasi perumahan ini sesuai RT/RW?');">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="flex items-center px-6 py-2 bg-green-600 text-white rounded-full font-bold hover:bg-green-700 transition transform hover:scale-105">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        SETUJUI LOKASI
+                                    </button>
+                                </form>
+                            @endif
+
+                            <div class="flex space-x-4">
+                                <a href="{{ route('admin.projects.show', $project) }}"
+                                    class="p-3 bg-white/20 rounded-full hover:bg-white/40 transform hover:scale-110 transition-all"
+                                    title="Lihat Detail">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
-                                </button>
-                            </form>
+                                </a>
+                                <a href="{{ route('admin.projects.edit', $project) }}"
+                                    class="p-3 bg-white/20 rounded-full hover:bg-white/40 transform hover:scale-110 transition-all"
+                                    title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </a>
+                                <form action="{{ route('admin.projects.destroy', $project) }}" method="POST"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus proyek ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="p-3 bg-white/20 rounded-full hover:bg-red-500/80 transform hover:scale-110 transition-all"
+                                        title="Hapus">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 @empty
                     <div class="col-span-full bg-white text-center p-12 rounded-lg shadow-md">
-                        @if ($search)
-                            <p class="text-xl text-gray-500">Tidak ada proyek perumahan yang cocok dengan pencarian
-                                <span class="font-semibold">"{{ $search }}"</span>.
-                            </p>
-                            <a href="{{ route('admin.projects.index') }}"
-                                class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-                                Reset Pencarian
-                            </a>
-                        @else
-                            <p class="text-xl text-gray-500">Belum ada data proyek perumahan.</p>
-                            <p class="text-sm text-gray-400 mt-2">Gunakan tombol "Tambah Proyek Baru" di halaman
-                                Dashboard untuk memulai.</p>
-                        @endif
+                        <p class="text-xl text-gray-500">Belum ada data proyek perumahan.</p>
                     </div>
                 @endforelse
             </div>
+            
             <div class="mt-8">
                 {{ $projects->links() }}
             </div>

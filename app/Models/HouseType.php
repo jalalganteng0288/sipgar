@@ -24,6 +24,7 @@ class HouseType extends Model
         'land_area',
         'building_area',
         'total_units',
+        'ready_stock',
         'specifications',
     ];
 

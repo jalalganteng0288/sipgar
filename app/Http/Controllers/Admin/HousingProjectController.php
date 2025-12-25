@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
+use App\Models\HouseType;
 use App\Http\Controllers\Controller;
 use App\Models\HousingProject;
 use Illuminate\Http\Request;
@@ -45,10 +45,10 @@ class HousingProjectController extends Controller
         $search = $request->input('search');
         $user = Auth::user();
 
-        $query = HousingProject::with(['developer', 'houseTypes', 'district'])
-            ->withCount('houseTypes'); // Hitung jumlah tipe rumah
+        // 1. Inisialisasi query dasar dengan relasi utama
+        $query = HousingProject::with(['developer', 'district', 'houseTypes']);
 
-        // === FILTER ROLE ===
+        // 2. === FILTER ROLE (Sesuai kode asli kamu) ===
         if ($user->hasRole('developer')) {
             if ($user->developer) {
                 $query->where('developer_id', $user->developer->id);
@@ -57,22 +57,33 @@ class HousingProjectController extends Controller
             }
         }
 
-        // === FILTER PENCARIAN ===
-        if (!empty($search)) {
+        // 3. === FILTER PENCARIAN ===
+        if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%') // <-- disesuaikan dengan kolom di DB
-                    ->orWhereHas('developer', function ($q2) use ($search) {
-                        $q2->where('company_name', 'like', '%' . $search . '%');
-                    });
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('developer_name', 'like', "%{$search}%");
             });
         }
 
-        // === PAGINASI ===
-        $projects = $query->latest()->paginate(10);
+        // 4. Ambil data dengan paginasi
+        $projects = $query->latest()->paginate(9);
+
+        // 5. MANIPULASI DATA (Menghitung manual agar PASTI tidak error query)
+        $projects->getCollection()->transform(function ($project) {
+            // Hitung Total Unit dari relasi houseTypes
+            $project->total_units = $project->houseTypes->sum('total_units');
+
+            // Hitung Unit Tersedia dari kolom ready_stock
+            $project->available_units = $project->houseTypes->sum('ready_stock');
+
+            // Hitung Jumlah Tipe Rumah
+            $project->house_types_count = $project->houseTypes->count();
+
+            return $project;
+        });
 
         return view('admin.projects.index', compact('projects', 'search'));
     }
-
 
 
     public function create()
@@ -92,66 +103,33 @@ class HousingProjectController extends Controller
 
 
 
-    public function store(Request $request)
+    public function store(Request $request, HousingProject $project)
     {
-        $user = Auth::user();
+        $this->authorize('update', $project);
 
-        // 1. Aturan validasi dasar
-        $rules = [
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|string|in:Komersil,Subsidi',
-            'address' => 'required|string',
-            'district_code' => 'required|exists:districts,code',
-            'village_code' => 'required|exists:villages,code',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+            'price' => 'required|numeric|min:0',
+            'status' => 'required|string',
+            'total_units' => 'required|integer|min:0',
+            'ready_stock' => 'required|integer|min:0', // TAMBAHKAN INI
             'description' => 'nullable|string',
+            'land_area' => 'required|numeric|min:0',
+            'building_area' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'site_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ];
+            'floor_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
 
-        // 2. Sesuaikan aturan validasi berdasarkan role
-        if ($user->hasRole('admin')) {
-            // Admin WAJIB memilih developer_id dari dropdown
-            $rules['developer_id'] = 'required|exists:developers,id';
-        }
-
-        // 3. Validasi request
-        $validated = $request->validate($rules);
-        $data = $validated; // Data awal adalah data yang tervalidasi
-
-        // 4. Logika khusus untuk role
-        if ($user->hasRole('admin')) {
-            // Jika Admin, ambil developer_name dari developer_id yang dipilih
-            $developer = Developer::find($validated['developer_id']);
-            $data['developer_name'] = $developer->company_name;
-            // $data['developer_id'] sudah ada dari $validated
-        } elseif ($user->hasRole('developer')) {
-            $developer = $user->developer; // Ambil relasi developer dari user
-
-            if (!$developer) {
-                return redirect()->back()
-                    ->withErrors(['developer_data' => 'Data perusahaan Anda belum lengkap. Harap lengkapi profil perusahaan sebelum membuat proyek.'])
-                    ->withInput();
-            }
-
-            // Timpa/isi data developer_id dan developer_name
-            $data['developer_id'] = $developer->id;
-            $data['developer_name'] = $developer->company_name; // Ambil nama resmi
-        }
-
-        // 5. Proses upload file
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('project-images', 'public');
+            $validated['image'] = $request->file('image')->store('house-type-images', 'public');
         }
-        if ($request->hasFile('site_plan')) {
-            $data['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
+        if ($request->hasFile('floor_plan')) {
+            $validated['floor_plan'] = $request->file('floor_plan')->store('floor-plans', 'public');
         }
 
-        // 6. Buat proyek
-        HousingProject::create($data);
+        $project->houseTypes()->create($validated);
 
-        return redirect()->route('admin.projects.index')->with('success', 'Data perumahan berhasil ditambahkan.');
+        return redirect()->route('admin.projects.show', $project->id)->with('success', 'Tipe rumah berhasil ditambahkan.');
     }
 
     public function show(HousingProject $project)
@@ -183,65 +161,43 @@ class HousingProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, HousingProject $project)
+    public function update(Request $request, HouseType $houseType)
     {
-        $user = Auth::user();
+        $this->authorize('update', $houseType->housingProject);
 
-        // 1. Aturan validasi dasar
-        $rules = [
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|string|in:Komersil,Subsidi',
-            'address' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'status' => 'required|string',
+            'total_units' => 'required|integer|min:0',
+            'ready_stock' => 'required|integer|min:0', // PASTIKAN INI ADA
+            'land_area' => 'required|numeric|min:0',   // TAMBAHKAN KEMBALI INI
+            'building_area' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
-            'site_plan' => 'nullable|image|max:2048',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'district_code' => 'required|exists:districts,code',
-            'village_code' => 'required|exists:villages,code',
-        ];
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'floor_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
 
-        // 2. Sesuaikan aturan validasi
-        if ($user->hasRole('admin')) {
-            $rules['developer_id'] = 'required|exists:developers,id';
-        }
-
-        // 3. Validasi
-        $validatedData = $request->validate($rules);
-
-        // 4. Logika khusus untuk role
-        if ($user->hasRole('admin')) {
-            // Jika Admin, ambil developer_name dari developer_id yang dipilih
-            $developer = Developer::find($validatedData['developer_id']);
-            $validatedData['developer_name'] = $developer->company_name;
-        } elseif ($user->hasRole('developer')) {
-            $developer = $user->developer;
-            if ($developer) {
-                // Paksa ID dan Nama agar sesuai dengan profil login
-                $validatedData['developer_id'] = $developer->id;
-                $validatedData['developer_name'] = $developer->company_name;
-            }
-        }
-
-        // 5. Proses upload file (Hapus file lama jika ada)
+        // Logika upload foto tipe rumah
         if ($request->hasFile('image')) {
-            if ($project->image) {
-                Storage::disk('public')->delete($project->image);
+            if ($houseType->image) {
+                Storage::disk('public')->delete($houseType->image);
             }
-            $validatedData['image'] = $request->file('image')->store('project-images', 'public');
+            $validated['image'] = $request->file('image')->store('house-type-images', 'public');
         }
 
-        if ($request->hasFile('site_plan')) {
-            if ($project->site_plan) {
-                Storage::disk('public')->delete($project->site_plan);
+        // Logika upload denah
+        if ($request->hasFile('floor_plan')) {
+            if ($houseType->floor_plan) {
+                Storage::disk('public')->delete($houseType->floor_plan);
             }
-            $validatedData['site_plan'] = $request->file('site_plan')->store('site-plans', 'public');
+            $validated['floor_plan'] = $request->file('floor_plan')->store('floor-plans', 'public');
         }
 
-        // 6. Update proyek
-        $project->update($validatedData);
+        $houseType->update($validated);
 
-        return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
+        return redirect()->route('admin.projects.show', $houseType->housing_project_id)
+            ->with('success', 'Tipe rumah berhasil diperbarui.');
     }
 
     public function destroy(HousingProject $project)
@@ -279,5 +235,11 @@ class HousingProjectController extends Controller
             ->pluck('name', 'code');
 
         return response()->json($villages);
+    }
+    public function approve(HousingProject $project)
+    {
+        $project->update(['status' => 'approved']);
+
+        return back()->with('success', 'Proyek perumahan berhasil disetujui.');
     }
 }

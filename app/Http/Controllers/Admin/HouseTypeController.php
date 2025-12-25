@@ -64,7 +64,7 @@ class HouseTypeController extends Controller
     {
         // 1. OTORISASI: Cek apakah user yang login berhak mengedit Tipe Rumah ini.
         // Kita cek kepemilikan melalui Proyek Induknya ($houseType->housingProject).
-        $this->authorize('update', $houseType->housingProject); 
+        $this->authorize('update', $houseType->housingProject);
 
         return view('admin.house-types.edit', compact('houseType'));
     }
@@ -76,14 +76,13 @@ class HouseTypeController extends Controller
     {
         // 1. OTORISASI: Cek kembali sebelum mengupdate.
         $this->authorize('update', $houseType->housingProject);
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'status' => 'required|string',
             'total_units' => 'required|integer|min:0',
-            'description' => 'nullable|string',
-            'land_area' => 'required|numeric|min:0',
+            'ready_stock'   => 'required|integer|min:0', 
             'building_area' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'floor_plan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -98,7 +97,7 @@ class HouseTypeController extends Controller
             $validated['image'] = $request->file('image')->store('house-type-images', 'public');
         } else {
             // Penting: Jika user tidak upload, jangan hapus data image lama dari array $validated
-            unset($validated['image']); 
+            unset($validated['image']);
         }
 
         if ($request->hasFile('floor_plan')) {
@@ -109,7 +108,7 @@ class HouseTypeController extends Controller
         } else {
             unset($validated['floor_plan']);
         }
-        
+
         $houseType->update($validated);
 
         return redirect()->route('admin.projects.show', $houseType->housing_project_id)->with('success', 'Tipe rumah berhasil diperbarui.');
@@ -122,9 +121,9 @@ class HouseTypeController extends Controller
     {
         // 1. OTORISASI: Cek sebelum menghapus.
         $this->authorize('update', $houseType->housingProject);
-        
+
         $projectId = $houseType->housing_project_id;
-        
+
         // Hapus gambar dari storage sebelum hapus data
         if ($houseType->image) {
             Storage::disk('public')->delete($houseType->image);

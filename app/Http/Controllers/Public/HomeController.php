@@ -124,7 +124,7 @@ class HomeController extends Controller
 
     public function show(HousingProject $project)
     {
-        $project->load('houseTypes', 'district', 'village', 'images');
+        $project->load('houseTypes', 'district', 'village', 'images', 'developer');
         return view('projects.show', compact('project'));
     }
 }

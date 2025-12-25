@@ -18,16 +18,16 @@ class HousingProject extends Model
         'status',
         'image',
         'site_plan',
-        'latitude',      
+        'latitude',
         'longitude',
-        'district_code', 
+        'district_code',
         'village_code',
         'developer_id', // <-- TAMBAHKAN BARIS INI
     ];
 
     public function houseTypes()
     {
-        return $this->hasMany(HouseType::class);
+        return $this->hasMany(HouseType::class, 'housing_project_id');
     }
 
     /**
