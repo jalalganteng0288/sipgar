@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // --- Rute yang HANYA bisa diakses 'admin' ---
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('developers', DeveloperController::class);
+        
 
         Route::patch('developers/{developer}/toggle-role', [DeveloperController::class, 'toggleRole'])
             ->name('developers.toggleRole');
@@ -68,7 +69,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('report/export-units', [ReportController::class, 'exportUnitData'])
             ->name('report.exportUnits');
 
-        Route::put('projects/{project}/approve', [HousingProjectController::class, 'approve'])->name('projects.approve');
+        Route::patch('/projects/{project}/approve', [HousingProjectController::class, 'approve'])->name('projects.approve');
         Route::put('projects/{project}/reject', [HousingProjectController::class, 'reject'])->name('projects.reject');
     });
 });

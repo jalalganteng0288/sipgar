@@ -11,11 +11,14 @@
             <div class="flex justify-between items-center mb-4">
                 {{-- Legend Warna --}}
                 <div class="flex gap-4 bg-white p-2 rounded-md shadow-sm border text-xs font-bold">
-                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span> Subsidi
+                    <div class="flex items-center">
+                        <span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span> Subsidi (Layak)
                     </div>
-                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Komersil
+                    <div class="flex items-center">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Komersil (Layak)
                     </div>
-                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-gray-400 mr-2"></span> Lainnya
+                    <div class="flex items-center">
+                        <span class="w-3 h-3 rounded-full bg-gray-400 mr-2"></span> Belum Terverifikasi (Abu-abu)
                     </div>
                 </div>
 
@@ -33,11 +36,18 @@
                     <div id="map" style="height: 600px; width: 100%; border-radius: 8px;"></div>
 
                     <script>
-                        // Fungsi Menentukan Warna berdasarkan Tipe
-                        function getMarkerColor(type) {
-                            if (!type) return '#9ca3af'; // Gray
-                            if (type.toLowerCase() === 'subsidi') return '#22c55e'; // Green
-                            if (type.toLowerCase() === 'komersil') return '#3b82f6'; // Blue
+                        // FUNGSI SEMPURNA: Menentukan Warna berdasarkan Status & Tipe
+                        function getMarkerColor(type, status) {
+                            // 1. Jika belum disetujui (Pending), WAJIB Abu-abu
+                            if (!status || status.toLowerCase() !== 'approved') {
+                                return '#9ca3af'; // Gray-400
+                            }
+
+                            // 2. Jika sudah disetujui, baru warnai sesuai tipe
+                            if (!type) return '#9ca3af'; 
+                            if (type.toLowerCase() === 'subsidi') return '#22c55e'; // Green-500
+                            if (type.toLowerCase() === 'komersil') return '#3b82f6'; // Blue-500
+                            
                             return '#9ca3af';
                         }
 
@@ -67,20 +77,20 @@
 
                         L.geoJSON(geoJsonData, {
                             pointToLayer: function(feature, latlng) {
-                                // Ambil warna berdasarkan tipe perumahan
-                                var color = getMarkerColor(feature.properties.type);
+                                // PERBAIKAN: Masukkan type DAN status ke fungsi warna
+                                var color = getMarkerColor(feature.properties.type, feature.properties.status);
                                 var customIcon = createColoredPin(color);
                                 return L.marker(latlng, {
                                     icon: customIcon
                                 });
                             },
                             onEachFeature: function(feature, layer) {
-                                // Cek status untuk kelayakan RT/RW
-                                // Ubah baris ini
-                                var statusLabel = (feature.properties.status && feature.properties.status.toLowerCase() ===
-                                        'approved') ?
-                                    '<span style="color:green; font-weight:bold;">Sesuai RT/RW (Layak)</span>' :
-                                    '<span style="color:red; font-weight:bold;">Belum Terverifikasi</span>';
+                                // Status Label untuk di dalam Popup
+                                var isApproved = (feature.properties.status && feature.properties.status.toLowerCase() === 'approved');
+                                
+                                var statusLabel = isApproved ?
+                                    '<span style="color:green; font-weight:bold;">Sesuai RT/RW (Terverifikasi)</span>' :
+                                    '<span style="color:red; font-weight:bold;">Belum Terverifikasi (Pending)</span>';
 
                                 var popupContent = `
                                     <div style="text-align:center; min-width:150px;">
@@ -91,7 +101,7 @@
                                         </div>
                                         <a href="${feature.properties.url}" target="_blank"
                                            style="background-color:#3b82f6; color:white; padding:5px 10px; text-decoration:none; border-radius:4px; font-size:11px; display:inline-block;">
-                                           Lihat Detail
+                                            Lihat Detail
                                         </a>
                                     </div>
                                 `;

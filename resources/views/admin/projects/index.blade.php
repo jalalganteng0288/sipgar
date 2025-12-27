@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+
             {{-- TOMBOL KEMBALI --}}
             <div class="flex justify-end mb-4">
                 <a href="{{ route('admin.dashboard') }}"
@@ -64,7 +64,7 @@
                 @forelse ($projects as $project)
                     <div
                         class="group relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                        
+
                         {{-- Gambar Latar Belakang --}}
                         <div class="absolute inset-0 z-0">
                             <img src="{{ $project->image ? asset('storage/' . $project->image) : 'https://via.placeholder.com/400x500.png?text=No+Image' }}"
@@ -81,9 +81,10 @@
                                     class="text-xs font-bold px-3 py-1 rounded-full {{ $project->type === 'Subsidi' ? 'bg-blue-500/80' : 'bg-green-500/80' }}">
                                     {{ $project->type }}
                                 </span>
-                                
+
                                 {{-- Badge Status Verifikasi --}}
-                                <span class="text-xs font-bold px-3 py-1 rounded-full {{ $project->status === 'approved' ? 'bg-green-600' : 'bg-red-500 animate-pulse' }}">
+                                <span
+                                    class="text-xs font-bold px-3 py-1 rounded-full {{ $project->status === 'approved' ? 'bg-green-600' : 'bg-red-500 animate-pulse' }}">
                                     {{ $project->status === 'approved' ? 'Sesuai RT/RW' : 'Belum Verifikasi' }}
                                 </span>
                             </div>
@@ -121,22 +122,19 @@
                         {{-- Tombol Aksi (Muncul saat Hover) --}}
                         <div
                             class="absolute inset-0 z-20 bg-black/50 flex flex-col items-center justify-center space-y-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            
+
                             {{-- BARU: Tombol Approval Cepat --}}
-                            @if($project->status !== 'approved')
+                            @if (auth()->user()->hasRole('admin') && $project->status !== 'approved')
                                 <form action="{{ route('admin.projects.approve', $project->id) }}" method="POST"
-                                    onsubmit="return confirm('Setujui lokasi perumahan ini sesuai RT/RW?');">
+                                    class="mt-2">
                                     @csrf
-                                    @method('PUT')
-                                    <button type="submit" class="flex items-center px-6 py-2 bg-green-600 text-white rounded-full font-bold hover:bg-green-700 transition transform hover:scale-105">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        SETUJUI LOKASI
+                                    @method('PATCH')
+                                    <button type="submit"
+                                        class="w-full bg-green-500 hover:bg-green-600 text-white text-xs py-2 rounded-md transition">
+                                        Setujui Lokasi
                                     </button>
                                 </form>
                             @endif
-
                             <div class="flex space-x-4">
                                 <a href="{{ route('admin.projects.show', $project) }}"
                                     class="p-3 bg-white/20 rounded-full hover:bg-white/40 transform hover:scale-110 transition-all"
@@ -165,8 +163,9 @@
                                     <button type="submit"
                                         class="p-3 bg-white/20 rounded-full hover:bg-red-500/80 transform hover:scale-110 transition-all"
                                         title="Hapus">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -181,7 +180,7 @@
                     </div>
                 @endforelse
             </div>
-            
+
             <div class="mt-8">
                 {{ $projects->links() }}
             </div>

@@ -22,7 +22,7 @@ class HousingProject extends Model
         'longitude',
         'district_code',
         'village_code',
-        'developer_id', // <-- TAMBAHKAN BARIS INI
+        'developer_id',
     ];
 
     public function houseTypes()
